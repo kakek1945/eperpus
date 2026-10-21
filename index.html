@@ -1,0 +1,3919 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SmartLib · SMP Negeri 3 Merbau — Digital Library & Barcode System</title>
+  <meta name="theme-color" content="#24292f" />
+
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22SmartLib%20SMPN%203%20Merbau%22%2C%22short_name%22%3A%22SmartLib%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%2324292f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fibb.co%2FfVTzR5H6%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', '"Noto Sans"', 'Inter', 'Helvetica', 'Arial', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', '"SF Mono"', 'Menlo', 'Consolas', '"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            gh: {
+              header: '#24292f',
+              canvas: '#ffffff',
+              subtle: '#f6f8fa',
+              inset: '#eff2f5',
+              border: '#d0d7de',
+              muted: '#d8dee4',
+              fg: '#1f2328',
+              fgMuted: '#656d76',
+              accent: '#0969da',
+              accentBg: '#ddf4ff',
+              success: '#1f883d',
+              successHover: '#1a7f37',
+              successBg: '#dafbe1',
+              Warning: '#9a6700',
+              warningBg: '#fff8c5',
+              danger: '#cf222e',
+              dangerBg: '#ffebe9',
+              done: '#8250df',
+              doneBg: '#fbefff'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- External Libraries: Lucide Icons, JsBarcode, HTML5-QRCode, SheetJS (XLSX) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* Fullscreen Reset untuk menutupi template bawaan Blogger */
+    #smartlib-root {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: #ffffff;
+      z-index: 999999;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Inter, Helvetica, Arial, sans-serif;
+      color: #1f2328;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #smartlib-root::-webkit-scrollbar { width: 8px; height: 8px; }
+    #smartlib-root::-webkit-scrollbar-track { background: #f6f8fa; }
+    #smartlib-root::-webkit-scrollbar-thumb { background: #d0d7de; border-radius: 4px; }
+    #smartlib-root::-webkit-scrollbar-thumb:hover { background: #8c959f; }
+
+    /* GitHub Primer Button Styles */
+    .gh-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      user-select: none;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      background-color: #f6f8fa;
+      color: #24292f;
+      box-shadow: 0 1px 0 rgba(31, 35, 40, 0.04);
+      transition: 0.15s cubic-bezier(0.3, 0, 0.5, 1);
+    }
+    .gh-btn:hover {
+      background-color: #f3f4f6;
+      border-color: #c6cdd5;
+    }
+    .gh-btn-primary {
+      background-color: #1f883d;
+      color: #ffffff;
+      border-color: rgba(31, 35, 40, 0.15);
+      box-shadow: 0 1px 0 rgba(31, 35, 40, 0.1);
+    }
+    .gh-btn-primary:hover {
+      background-color: #1a7f37;
+      border-color: rgba(31, 35, 40, 0.15);
+    }
+    .gh-btn-accent {
+      background-color: #0969da;
+      color: #ffffff;
+      border-color: rgba(31, 35, 40, 0.15);
+    }
+    .gh-btn-accent:hover {
+      background-color: #0860ca;
+    }
+    .gh-btn-danger {
+      color: #cf222e;
+      background-color: #f6f8fa;
+      border-color: #d0d7de;
+    }
+    .gh-btn-danger:hover {
+      background-color: #a40e26;
+      color: #ffffff;
+      border-color: rgba(31, 35, 40, 0.15);
+    }
+
+    /* GitHub Box & Inputs */
+    .gh-box {
+      background-color: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+    }
+    .gh-box-header {
+      padding: 12px 16px;
+      background-color: #f6f8fa;
+      border-bottom: 1px solid #d0d7de;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+    }
+    .gh-input {
+      padding: 5px 12px;
+      font-size: 14px;
+      line-height: 20px;
+      color: #1f2328;
+      background-color: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2);
+      transition: 80ms cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    .gh-input:focus {
+      background-color: #ffffff;
+      border-color: #0969da;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    }
+    .gh-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 7px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      border-radius: 2em;
+      border: 1px solid transparent;
+    }
+    .gh-counter {
+      display: inline-block;
+      min-width: 20px;
+      padding: 0 6px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      color: #1f2328;
+      text-align: center;
+      background-color: rgba(175, 184, 193, 0.2);
+      border-radius: 2em;
+    }
+
+    /* Media Queries untuk Navigasi Adaptif (Desktop Fixed Sidebar vs Mobile Floating Bottom Nav) */
+    @media (min-width: 1024px) {
+      .desktop-sidebar { display: flex !important; }
+      .mobile-bottom-nav { display: none !important; }
+      .main-content-area { margin-left: 16.5rem; padding-bottom: 2.5rem; }
+    }
+    @media (max-width: 1023px) {
+      .desktop-sidebar { display: none !important; }
+      .mobile-bottom-nav { display: flex !important; }
+      .main-content-area { margin-left: 0; padding-bottom: 5.5rem; }
+    }
+
+    /* Glassmorphism Surface untuk Floating Nav & Modal Header */
+    .glass-surface {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Pengaturan Cetak Label Barcode, Kartu Anggota & Rekap Inventaris */
+    @media print {
+      body * { visibility: hidden; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area {
+        display: block !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #ffffff;
+        padding: 16px;
+        z-index: 9999999;
+      }
+    }
+  </style>
+</head>
+<body class="bg-white antialiased selection:bg-[#0969da] selection:text-white">
+
+<div id="smartlib-root">
+  <!-- Banner Mode Preview (Hanya dirender jika IS_PREVIEW === true) -->
+  <div id="preview-banner-slot"></div>
+
+  <!-- Toast Notification -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[1000008] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Modal Kamera Pemindai Barcode HP/Laptop (GitHub Dialog Style) -->
+  <div id="scanner-modal" class="hidden fixed inset-0 z-[1000006] bg-slate-900/50 backdrop-blur-[2px] flex items-center justify-center p-4">
+    <div class="gh-box shadow-2xl max-w-md w-full overflow-hidden">
+      <div class="gh-box-header flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="scan-barcode" class="w-4 h-4 text-[#0969da]"></i>
+          <h3 class="text-sm font-semibold text-[#1f2328]">Scan Barcode via Kamera HP</h3>
+        </div>
+        <button onclick="window.closeCameraScanner()" class="p-1 rounded-md text-[#656d76] hover:text-[#1f2328] hover:bg-slate-200/60 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 bg-white">
+        <p id="scanner-subtitle" class="text-xs text-[#656d76] mb-3">Arahkan kamera ke Barcode Buku atau Kartu Anggota</p>
+        <div id="qr-reader" class="w-full rounded-md overflow-hidden border border-[#d0d7de] bg-[#24292f] min-h-[250px]"></div>
+        <div class="mt-3 flex items-center justify-between text-xs text-[#656d76] bg-[#f6f8fa] px-3 py-2 rounded-md border border-[#d0d7de]">
+          <span class="flex items-center gap-1.5"><i data-lucide="smartphone" class="w-3.5 h-3.5 text-[#1f883d]"></i> Kamera Aktif</span>
+          <span class="font-mono font-semibold text-[#0969da]">CODE-128 / ISBN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Dialog Serbaguna (CRUD Buku, Anggota/Role, Upload Excel/CSV, Edit Sambutan) -->
+  <div id="app-modal" class="hidden fixed inset-0 z-[1000005] bg-slate-900/50 backdrop-blur-[2px] flex items-center justify-center p-4 overflow-y-auto">
+    <div id="app-modal-content" class="gh-box shadow-2xl max-w-2xl w-full overflow-hidden my-8"></div>
+  </div>
+
+  <!-- Area Khusus Cetak (Tersembunyi di layar, tampil saat Print) -->
+  <div id="print-area" class="hidden"></div>
+
+  <!-- Kontainer Utama Aplikasi -->
+  <div id="app-view"></div>
+</div>
+
+<script type="module">
+// KONFIGURASI APLIKASI
+const IS_PREVIEW = false; // Ubah menjadi false SAAT DEPLOY / PUBLISH agar terhubung murni ke Firebase tanpa data dummy
+
+// PASTE FIREBASE CONFIG ANDA DI SINI
+const firebaseConfig = {
+  apiKey: "AIzaSyCvWVSSmF4zRl7vBDA0HXTkHnqN9z1GpGI",
+  authDomain: "pustadig.firebaseapp.com",
+  projectId: "pustadig",
+  storageBucket: "pustadig.firebasestorage.app",
+  messagingSenderId: "840303487918",
+  appId: "1:840303487918:web:9ae090ba6d46f2ab6af63f",
+  measurementId: "G-6FQJDV1706"
+};
+
+// Registrasi Service Worker Dinamis (PWA 1 File)
+if ('serviceWorker' in navigator) {
+  const swScript = `
+    self.addEventListener('install', (event) => self.skipWaiting());
+    self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+    self.addEventListener('fetch', (event) => {});
+  `;
+  const swBlob = new Blob([swScript], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+}
+
+// Import Firebase SDK Modular
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let app = null;
+let auth = null;
+let db = null;
+let unsubBooks = null;
+let unsubMembers = null;
+let unsubTransactions = null;
+let unsubPrincipal = null;
+
+if (!IS_PREVIEW) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+}
+
+// Daftar Sumber Buku Resmi (Mendukung Sumber Pengadaan & Kategori Rekap Inventaris)
+const BOOK_SOURCES = [
+  "BOS Reguler",
+  "Afirmasi",
+  "Kinerja",
+  "Bantuan Pemerintah",
+  "Bantuan Pihak lain",
+  "Pembelian",
+  "Hibah / Sumbangan",
+  "Bantuan BOS",
+  "Lainnya"
+];
+
+// Kategori Rekapitulasi Inventaris Buku Berdasarkan Sumber (Standar Rekap Kepala Sekolah)
+const REKAP_SOURCE_ROWS = [
+  "Pembelian",
+  "Hibah / Sumbangan",
+  "Bantuan Pemerintah",
+  "Bantuan BOS",
+  "Lainnya"
+];
+
+// Kategori Rekapitulasi Inventaris Buku Berdasarkan Kondisi
+const REKAP_CONDITION_ROWS = [
+  { key: "Baik", field: "condBaik" },
+  { key: "Rusak Ringan", field: "condRusakRingan" },
+  { key: "Rusak Berat", field: "condRusakBerat" },
+  { key: "Hilang", field: "condHilang" }
+];
+
+// Pemetaan otomatis dari Sumber Buku ke 5 baris Rekapitulasi Inventaris Buku
+function mapBookSourceToRekapCategory(rawSource) {
+  const s = String(rawSource || "").trim();
+  if (s === "Pembelian") return "Pembelian";
+  if (s === "Hibah / Sumbangan" || s === "Bantuan Pihak lain") return "Hibah / Sumbangan";
+  if (s === "Bantuan Pemerintah") return "Bantuan Pemerintah";
+  if (s === "Bantuan BOS" || s === "BOS Reguler" || s === "Afirmasi" || s === "Kinerja") return "Bantuan BOS";
+  return "Lainnya";
+}
+
+// Ekstrak rincian kondisi buku (Baik, Rusak Ringan, Rusak Berat, Hilang) secara konsisten
+function getBookConditionBreakdown(book) {
+  const total = Math.max(0, Number(book.stockTotal || 0));
+  const hasExplicit =
+    book.condBaik !== undefined ||
+    book.condRusakRingan !== undefined ||
+    book.condRusakBerat !== undefined ||
+    book.condHilang !== undefined;
+
+  if (hasExplicit) {
+    const baik = Math.max(0, Number(book.condBaik || 0));
+    const ringan = Math.max(0, Number(book.condRusakRingan || 0));
+    const berat = Math.max(0, Number(book.condRusakBerat || 0));
+    const hilang = Math.max(0, Number(book.condHilang || 0));
+    return { baik, ringan, berat, hilang };
+  }
+
+  // Fallback jika buku lama hanya menyimpan string condition tunggal atau belum ada rincian
+  const condStr = String(book.condition || "Baik").trim();
+  if (condStr === "Rusak Ringan") return { baik: 0, ringan: total, berat: 0, hilang: 0 };
+  if (condStr === "Rusak Berat") return { baik: 0, ringan: 0, berat: total, hilang: 0 };
+  if (condStr === "Hilang") return { baik: 0, ringan: 0, berat: 0, hilang: total };
+  return { baik: total, ringan: 0, berat: 0, hilang: 0 };
+}
+
+// Hitung Data Rekapitulasi Inventaris Buku (Berdasarkan Sumber & Berdasarkan Kondisi)
+function computeInventoryRecapData() {
+  const bySource = REKAP_SOURCE_ROWS.map(label => ({
+    label,
+    titles: 0,
+    copies: 0
+  }));
+
+  const byCondition = {
+    "Baik": { label: "Baik", titles: 0, copies: 0 },
+    "Rusak Ringan": { label: "Rusak Ringan", titles: 0, copies: 0 },
+    "Rusak Berat": { label: "Rusak Berat", titles: 0, copies: 0 },
+    "Hilang": { label: "Hilang", titles: 0, copies: 0 }
+  };
+
+  state.books.forEach(book => {
+    const totalCopies = Math.max(0, Number(book.stockTotal || 0));
+    const mappedSrc = mapBookSourceToRekapCategory(book.bookSource);
+    const srcRow = bySource.find(r => r.label === mappedSrc) || bySource[4];
+    srcRow.titles += 1;
+    srcRow.copies += totalCopies;
+
+    const cond = getBookConditionBreakdown(book);
+    if (cond.baik > 0) {
+      byCondition["Baik"].titles += 1;
+      byCondition["Baik"].copies += cond.baik;
+    }
+    if (cond.ringan > 0) {
+      byCondition["Rusak Ringan"].titles += 1;
+      byCondition["Rusak Ringan"].copies += cond.ringan;
+    }
+    if (cond.berat > 0) {
+      byCondition["Rusak Berat"].titles += 1;
+      byCondition["Rusak Berat"].copies += cond.berat;
+    }
+    if (cond.hilang > 0) {
+      byCondition["Hilang"].titles += 1;
+      byCondition["Hilang"].copies += cond.hilang;
+    }
+  });
+
+  const totalSourceTitles = bySource.reduce((acc, r) => acc + r.titles, 0);
+  const totalSourceCopies = bySource.reduce((acc, r) => acc + r.copies, 0);
+
+  const conditionRows = [
+    byCondition["Baik"],
+    byCondition["Rusak Ringan"],
+    byCondition["Rusak Berat"],
+    byCondition["Hilang"]
+  ];
+  const totalConditionTitles = state.books.length;
+  const totalConditionCopies = conditionRows.reduce((acc, r) => acc + r.copies, 0);
+
+  return {
+    bySource,
+    totalSourceTitles,
+    totalSourceCopies,
+    conditionRows,
+    totalConditionTitles,
+    totalConditionCopies
+  };
+}
+
+// Daftar 6 Role Pengguna beserta konfigurasi warna badge ala GitHub Label
+const ROLE_CONFIG = {
+  kepala_sekolah: {
+    label: "Kepala Sekolah",
+    badgeClass: "bg-[#fbefff] text-[#8250df] border-[#d8b9ff]",
+    icon: "award",
+    desc: "Monitoring Rekapitulasi Inventaris Buku (Sumber & Kondisi) & Edit Sambutan"
+  },
+  admin: {
+    label: "Admin",
+    badgeClass: "bg-[#ffebe9] text-[#cf222e] border-[#ffcecb]",
+    icon: "shield-alert",
+    desc: "Superuser: Akses penuh sistem, pengguna, katalog & sirkulasi"
+  },
+  kepala_perpustakaan: {
+    label: "Kepala Perpustakaan",
+    badgeClass: "bg-[#ddf4ff] text-[#0969da] border-[#b6e3ff]",
+    icon: "building-2",
+    desc: "Manajemen katalog buku, sumber dana, anggota & laporan"
+  },
+  pustakawan: {
+    label: "Pustakawan",
+    badgeClass: "bg-[#dafbe1] text-[#1a7f37] border-[#aceebb]",
+    icon: "scan-barcode",
+    desc: "Operasional loket scan barcode peminjaman, pengembalian & file katalog buku"
+  },
+  guru: {
+    label: "Guru",
+    badgeClass: "bg-[#fff8c5] text-[#9a6700] border-[#fae17d]",
+    icon: "graduation-cap",
+    desc: "Anggota pendidik: Kartu digital barcode & peminjaman referensi"
+  },
+  siswa: {
+    label: "Siswa",
+    badgeClass: "bg-[#f6f8fa] text-[#57606a] border-[#d0d7de]",
+    icon: "user",
+    desc: "Anggota pelajar: Kartu anggota barcode & cek katalog buku"
+  }
+};
+
+// Helper Hak Akses Spesifik Berdasarkan Role
+function canManageBookFiles(role) {
+  return ["admin", "kepala_perpustakaan", "pustakawan"].includes(role);
+}
+
+function canManageUserFiles(role) {
+  // Pustakawan & Kepala Sekolah dihapus dari manajemen file data user
+  return ["admin", "kepala_perpustakaan"].includes(role);
+}
+
+// Warna Label Sumber Buku (GitHub Pill Style)
+function getSourceBadgeStyle(source) {
+  switch (source) {
+    case "BOS Reguler":
+    case "Bantuan BOS":
+      return "bg-[#ddf4ff] text-[#0969da] border-[#b6e3ff]";
+    case "Afirmasi":
+    case "Pembelian":
+      return "bg-[#fbefff] text-[#8250df] border-[#d8b9ff]";
+    case "Kinerja":
+      return "bg-[#dafbe1] text-[#1a7f37] border-[#aceebb]";
+    case "Bantuan Pemerintah":
+      return "bg-[#fff8c5] text-[#9a6700] border-[#fae17d]";
+    case "Hibah / Sumbangan":
+    case "Bantuan Pihak lain":
+      return "bg-[#ffebe9] text-[#cf222e] border-[#ffcecb]";
+    default:
+      return "bg-[#f6f8fa] text-[#57606a] border-[#d0d7de]";
+  }
+}
+
+// Cek apakah role termasuk jajaran pengelola (Staff/Manajemen)
+function isStaffRole(role) {
+  return ["admin", "kepala_sekolah", "kepala_perpustakaan", "pustakawan"].includes(role);
+}
+
+// Konfigurasi Default Sekolah & Logo dari https://ibb.co/fVTzR5H6
+const DEFAULT_SCHOOL_LOGO_LINK = "https://ibb.co/fVTzR5H6";
+const FALLBACK_LOGO_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230969da'/><path d='M50 18L82 34V54C82 72 68 85 50 90C32 85 18 72 18 54V34L50 18Z' fill='none' stroke='%23ffffff' stroke-width='6'/><path d='M36 46h28M36 58h20' stroke='%23ffffff' stroke-width='6' stroke-linecap='round'/></svg>";
+
+const defaultPrincipalWelcome = {
+  schoolName: "SMP Negeri 3 Merbau",
+  schoolLogo: DEFAULT_SCHOOL_LOGO_LINK,
+  repoSlug: "smpn3-merbau/perpustakaan-sekolah",
+  principalName: "Dr. H. Hendra Wijaya, M.Pd.",
+  principalNip: "NIP. 19740812 199903 1 004",
+  principalPhoto: "https://placehold.co/400x480/24292f/FFFFFF?text=Kepala+Sekolah",
+  greetingTitle: "Transformasi Literasi Digital & Tata Kelola Pustaka Terbuka",
+  greetingMessage: "Selamat datang di repositori katalog dan sirkulasi digital Perpustakaan SMP Negeri 3 Merbau. Melalui sistem terintegrasi berbasis Barcode serta akuntabilitas inventaris berdasarkan sumber pengadaan dan kondisi fisik buku, kami berkomitmen mewujudkan layanan literasi yang transparan, cepat, dan modern bagi Guru serta Siswa.",
+  quoteText: "Ilmu pengetahuan adalah repositori terbuka bagi generasi pembelajar sepanjang hayat."
+};
+
+const state = {
+  screen: 'landing', // 'landing' | 'login' | 'app'
+  currentUser: null, // { id, role, fullName, memberBarcode, department, email }
+  loginTab: 'id_login', // 'id_login' (Firestore Role Login) | 'admin_auth' (Firebase Auth Email)
+  activeMenu: 'dashboard',
+  searchQuery: '',
+  publicSearchQuery: '',
+  categoryFilter: 'Semua',
+  sourceFilter: 'Semua',
+  publicSourceFilter: 'Semua',
+  roleFilter: 'Semua',
+  trxFilter: 'Semua',
+  circulationForm: {
+    memberBarcode: '',
+    bookBarcode: '',
+    borrowDays: 7,
+    finePerDay: 1000
+  },
+  pendingImportBooks: [],
+  pendingImportMembers: [],
+  principalInfo: { ...defaultPrincipalWelcome },
+  resolvedLogoUrl: null,
+  books: [],
+  members: [],
+  transactions: []
+};
+
+// Fungsi Auto-Resolver untuk mengekstrak Direct Image URL jika pengguna memasukkan tautan halaman ImgBB (https://ibb.co/fVTzR5H6)
+async function resolveImgbbViewerUrl(url) {
+  if (!url) return;
+  if (url.includes("i.ibb.co") || /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(url)) {
+    state.resolvedLogoUrl = url;
+    return;
+  }
+  if (url.includes("ibb.co/")) {
+    const code = url.split("/").filter(Boolean).pop();
+    if (!state.resolvedLogoUrl) {
+      state.resolvedLogoUrl = `https://i.ibb.co/${code}/logo.png`;
+    }
+    try {
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const res = await fetch(proxyUrl);
+      if (res.ok) {
+        const data = await res.json();
+        const html = data.contents || "";
+        const match = html.match(/property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
+                      html.match(/content=["']([^"']+i\.ibb\.co[^"']+)["']/i);
+        if (match && match[1]) {
+          state.resolvedLogoUrl = match[1];
+          document.querySelectorAll("img.school-logo-img").forEach(img => {
+            img.src = state.resolvedLogoUrl;
+          });
+        }
+      }
+    } catch (e) {}
+  }
+}
+
+function getActiveSchoolLogo() {
+  return state.resolvedLogoUrl || state.principalInfo.schoolLogo || DEFAULT_SCHOOL_LOGO_LINK;
+}
+
+window.handleLogoError = function(imgEl) {
+  const step = parseInt(imgEl.getAttribute("data-fallback-step") || "0", 10);
+  if (step === 0) {
+    imgEl.setAttribute("data-fallback-step", "1");
+    imgEl.src = "https://wsrv.nl/?url=ibb.co/fVTzR5H6&default=https://placehold.co/120x120/24292f/ffffff.png?text=LOGO";
+  } else if (step === 1) {
+    imgEl.setAttribute("data-fallback-step", "2");
+    imgEl.src = FALLBACK_LOGO_SVG;
+  }
+};
+
+// Inisialisasi Data Dummy HANYA JIKA IS_PREVIEW === true (Maksimal 2 data per koleksi sesuai aturan ketat)
+function initPreviewDummyData() {
+  if (!IS_PREVIEW) return;
+
+  state.books = [
+    {
+      id: "book-demo-1",
+      barcode: "BK-2026001",
+      title: "Algoritma & Pemrograman Komputer Dasar",
+      author: "Prof. Rinaldi Munir",
+      publisher: "Informatika Bandung",
+      year: "2025",
+      category: "Teknologi",
+      bookSource: "Bantuan BOS",
+      shelf: "Rak A-01",
+      stockTotal: 5,
+      stockAvailable: 4,
+      condBaik: 4,
+      condRusakRingan: 1,
+      condRusakBerat: 0,
+      condHilang: 0,
+      createdAt: "2026-01-10"
+    },
+    {
+      id: "book-demo-2",
+      barcode: "BK-2026002",
+      title: "Bumi Manusia (Edisi Literasi Sekolah)",
+      author: "Pramoedya Ananta Toer",
+      publisher: "Lentera Dipantara",
+      year: "2024",
+      category: "Sastra & Sejarah",
+      bookSource: "Bantuan Pemerintah",
+      shelf: "Rak B-04",
+      stockTotal: 3,
+      stockAvailable: 3,
+      condBaik: 3,
+      condRusakRingan: 0,
+      condRusakBerat: 0,
+      condHilang: 0,
+      createdAt: "2026-01-12"
+    }
+  ];
+
+  state.members = [
+    {
+      id: "mem-demo-1",
+      memberBarcode: "SIS-1001",
+      password: "123",
+      role: "siswa",
+      fullName: "Nadia Putri Pratama",
+      department: "IX-A",
+      phone: "081234567890",
+      status: "active",
+      createdAt: "2026-01-05"
+    },
+    {
+      id: "mem-demo-2",
+      memberBarcode: "PTK-2001",
+      password: "123",
+      role: "pustakawan",
+      fullName: "Budi Santoso, S.IP.",
+      department: "Unit Perpustakaan",
+      phone: "081398765432",
+      status: "active",
+      createdAt: "2026-01-08"
+    }
+  ];
+
+  state.transactions = [
+    {
+      id: "trx-demo-1",
+      trxCode: "PR-9001",
+      memberId: "mem-demo-1",
+      memberBarcode: "SIS-1001",
+      memberName: "Nadia Putri Pratama",
+      memberRole: "siswa",
+      bookId: "book-demo-1",
+      bookBarcode: "BK-2026001",
+      bookTitle: "Algoritma & Pemrograman Komputer Dasar",
+      borrowDate: "2026-10-15",
+      dueDate: "2026-10-22",
+      returnDate: null,
+      status: "borrowed",
+      fineAmount: 0
+    }
+  ];
+}
+
+function startRealtimeListeners() {
+  if (IS_PREVIEW || !db) return;
+
+  unsubPrincipal = onSnapshot(doc(db, "settings", "schoolProfile"), (snap) => {
+    if (snap.exists()) {
+      state.principalInfo = { ...defaultPrincipalWelcome, ...snap.data() };
+      resolveImgbbViewerUrl(state.principalInfo.schoolLogo);
+      renderApp();
+    }
+  }, () => {});
+
+  unsubBooks = onSnapshot(collection(db, "books"), (snap) => {
+    state.books = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderApp();
+  }, () => {});
+
+  unsubMembers = onSnapshot(collection(db, "members"), (snap) => {
+    state.members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderApp();
+  }, () => {});
+
+  unsubTransactions = onSnapshot(collection(db, "transactions"), (snap) => {
+    state.transactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderApp();
+  }, () => {});
+}
+
+// Efek Suara Beep Saat Barcode Berhasil Dipindai
+function playScannerBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1046.5, ctx.currentTime);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+  } catch (e) {}
+}
+
+// Notifikasi Toast Bergaya GitHub Flash Alert
+function showToast(message, type = "info") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const styles = {
+    success: "bg-[#dafbe1] text-[#1a7f37] border-[#aceebb]",
+    error: "bg-[#ffebe9] text-[#cf222e] border-[#ffcecb]",
+    warning: "bg-[#fff8c5] text-[#9a6700] border-[#fae17d]",
+    info: "bg-[#ddf4ff] text-[#0969da] border-[#b6e3ff]"
+  };
+  const icons = {
+    success: "check-circle-2",
+    error: "alert-circle",
+    warning: "alert-triangle",
+    info: "info"
+  };
+
+  const toast = document.createElement("div");
+  toast.className = `pointer-events-auto flex items-center gap-2.5 px-3.5 py-2.5 rounded-md border shadow-md text-xs font-medium transition-all duration-300 ${styles[type] || styles.info}`;
+  toast.innerHTML = `
+    <i data-lucide="${icons[type] || 'info'}" class="w-4 h-4 shrink-0"></i>
+    <span class="flex-1 leading-snug">${message}</span>
+  `;
+  container.appendChild(toast);
+  if (window.lucide) window.lucide.createIcons();
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(-6px)";
+    setTimeout(() => toast.remove(), 250);
+  }, 3400);
+}
+
+// Render semua elemen SVG Barcode menggunakan JsBarcode
+function renderAllBarcodes() {
+  if (!window.JsBarcode) return;
+  document.querySelectorAll("svg.barcode-svg").forEach((svgEl) => {
+    const code = svgEl.getAttribute("data-code");
+    const height = parseInt(svgEl.getAttribute("data-height") || "36", 10);
+    if (code) {
+      try {
+        window.JsBarcode(svgEl, code, {
+          format: "CODE128",
+          lineColor: "#1f2328",
+          width: 1.6,
+          height: height,
+          displayValue: true,
+          font: "JetBrains Mono",
+          fontSize: 11,
+          margin: 4
+        });
+      } catch (err) {}
+    }
+  });
+}
+
+let html5QrScanner = null;
+
+window.openCameraScanner = async function(targetFieldId, subtitleText = "Arahkan kamera HP ke Barcode") {
+  const modal = document.getElementById("scanner-modal");
+  const subtitle = document.getElementById("scanner-subtitle");
+  if (subtitle) subtitle.textContent = subtitleText;
+  modal.classList.remove("hidden");
+
+  if (window.lucide) window.lucide.createIcons();
+
+  try {
+    if (html5QrScanner) {
+      await html5QrScanner.stop().catch(() => {});
+      html5QrScanner.clear();
+    }
+    html5QrScanner = new window.Html5Qrcode("qr-reader");
+    await html5QrScanner.start(
+      { facingMode: "environment" },
+      { fps: 12, qrbox: { width: 250, height: 140 } },
+      (decodedText) => {
+        playScannerBeep();
+        const code = decodedText.trim();
+        window.closeCameraScanner();
+
+        if (targetFieldId === 'circulation-member') {
+          state.circulationForm.memberBarcode = code;
+          renderApp();
+          showToast(`Barcode Anggota terbaca: ${code}`, "success");
+        } else if (targetFieldId === 'circulation-book') {
+          state.circulationForm.bookBarcode = code;
+          renderApp();
+          showToast(`Barcode Buku terbaca: ${code}`, "success");
+        } else if (targetFieldId === 'catalog-search') {
+          state.searchQuery = code;
+          renderApp();
+          showToast(`Mencari barcode: ${code}`, "info");
+        } else if (targetFieldId === 'public-search') {
+          state.publicSearchQuery = code;
+          renderApp();
+          showToast(`Barcode ditemukan: ${code}`, "info");
+        } else if (targetFieldId === 'QuickReturn') {
+          window.processReturnByBookBarcode(code);
+        } else {
+          const inputEl = document.getElementById(targetFieldId);
+          if (inputEl) {
+            inputEl.value = code;
+            inputEl.dispatchEvent(new Event("input"));
+            showToast(`Barcode berhasil dipindai: ${code}`, "success");
+          }
+        }
+      },
+      () => {}
+    );
+  } catch (err) {
+    showToast("Gagal mengakses kamera. Pastikan izin kamera diaktifkan & via HTTPS.", "error");
+    window.closeCameraScanner();
+  }
+};
+
+window.closeCameraScanner = async function() {
+  const modal = document.getElementById("scanner-modal");
+  modal.classList.add("hidden");
+  if (html5QrScanner) {
+    try {
+      await html5QrScanner.stop();
+      html5QrScanner.clear();
+    } catch (e) {}
+    html5QrScanner = null;
+  }
+};
+
+window.navigateScreen = function(screenName, loginTab = null) {
+  state.screen = screenName;
+  if (loginTab) state.loginTab = loginTab;
+  renderApp();
+  const root = document.getElementById("smartlib-root");
+  if (root) root.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.switchMenu = function(menuKey) {
+  state.activeMenu = menuKey;
+  renderApp();
+};
+
+window.switchLoginTab = function(tabName) {
+  state.loginTab = tabName;
+  renderApp();
+};
+
+// Simulasi Quick Switch Role (Hanya saat IS_PREVIEW === true agar mudah menguji 6 Role)
+window.quickPreviewRoleLogin = function(roleKey) {
+  if (!IS_PREVIEW) return;
+  const rInfo = ROLE_CONFIG[roleKey] || ROLE_CONFIG.siswa;
+  const barcodeMap = {
+    kepala_sekolah: "KS-001",
+    admin: "ADM-001",
+    kepala_perpustakaan: "KP-001",
+    pustakawan: "PTK-2001",
+    guru: "GRU-3001",
+    siswa: "SIS-1001"
+  };
+  const nameMap = {
+    kepala_sekolah: state.principalInfo.principalName,
+    admin: "System Administrator",
+    kepala_perpustakaan: "Dra. Hj. Siti Aminah, M.MPd.",
+    pustakawan: "Budi Santoso, S.IP.",
+    guru: "Ahmad Fauzi, S.Pd.",
+    siswa: "Nadia Putri Pratama"
+  };
+
+  state.currentUser = {
+    id: "preview-" + roleKey,
+    role: roleKey,
+    memberBarcode: barcodeMap[roleKey],
+    fullName: nameMap[roleKey],
+    department: rInfo.label
+  };
+  state.screen = "app";
+  state.activeMenu = isStaffRole(roleKey) ? "dashboard" : "member_home";
+  showToast(`Masuk sebagai ${rInfo.label} (${state.currentUser.fullName})`, "success");
+  renderApp();
+};
+
+window.handleLoginSubmit = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+
+  if (state.loginTab === 'admin_auth') {
+    const email = form.email.value.trim();
+    const password = form.password.value.trim();
+
+    if (IS_PREVIEW) {
+      if (email === "admin@sekolah.sch.id" && password === "admin123") {
+        window.quickPreviewRoleLogin('admin');
+      } else {
+        showToast("Email atau Password Admin salah!", "error");
+      }
+      return;
+    }
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      state.currentUser = {
+        id: cred.user.uid,
+        role: "admin",
+        email: cred.user.email,
+        memberBarcode: "ADMIN-AUTH",
+        fullName: "Administrator Utama",
+        department: "Admin Sistem"
+      };
+      state.screen = "app";
+      state.activeMenu = "dashboard";
+      showToast("Login Admin via Firebase Auth berhasil!", "success");
+      renderApp();
+    } catch (err) {
+      showToast("Gagal Login Admin: Periksa Email & Password Firebase Auth Anda.", "error");
+    }
+  } else {
+    const memberBarcode = form.memberBarcode.value.trim().toUpperCase();
+    const password = form.password.value.trim();
+
+    if (IS_PREVIEW) {
+      const found = state.members.find(
+        m => m.memberBarcode.toUpperCase() === memberBarcode && m.password === password
+      );
+      if (!found) {
+        showToast("ID Barcode / NIP / NIS atau Password tidak ditemukan!", "error");
+        return;
+      }
+      if (found.status !== "active") {
+        showToast("Akun Anda sedang dinonaktifkan sementara.", "warning");
+        return;
+      }
+      const userRole = found.role || "siswa";
+      state.currentUser = {
+        id: found.id,
+        role: userRole,
+        memberBarcode: found.memberBarcode,
+        fullName: found.fullName,
+        department: found.department,
+        phone: found.phone
+      };
+      state.screen = "app";
+      state.activeMenu = isStaffRole(userRole) ? "dashboard" : "member_home";
+      showToast(`Selamat datang, ${found.fullName} (${ROLE_CONFIG[userRole]?.label || userRole})!`, "success");
+      renderApp();
+      return;
+    }
+
+    try {
+      const q = query(
+        collection(db, "members"),
+        where("memberBarcode", "==", memberBarcode),
+        where("password", "==", password)
+      );
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        showToast("ID Pengguna / Barcode atau Password salah!", "error");
+        return;
+      }
+      const memberDoc = snap.docs[0];
+      const memberData = memberDoc.data();
+      if (memberData.status !== "active") {
+        showToast("Status akun sedang ditangguhkan.", "warning");
+        return;
+      }
+      const userRole = memberData.role || "siswa";
+      state.currentUser = {
+        id: memberDoc.id,
+        role: userRole,
+        memberBarcode: memberData.memberBarcode,
+        fullName: memberData.fullName,
+        department: memberData.department,
+        phone: memberData.phone
+      };
+      state.screen = "app";
+      state.activeMenu = isStaffRole(userRole) ? "dashboard" : "member_home";
+      showToast(`Selamat datang, ${memberData.fullName}!`, "success");
+      renderApp();
+    } catch (err) {
+      showToast("Terjadi kesalahan saat memverifikasi akun di Firestore.", "error");
+    }
+  }
+};
+
+window.handleLogout = async function() {
+  if (!IS_PREVIEW && auth && state.currentUser?.role === 'admin') {
+    await signOut(auth).catch(() => {});
+  }
+  state.currentUser = null;
+  state.screen = "landing";
+  showToast("Anda telah keluar dari sesi perpustakaan.", "info");
+  renderApp();
+};
+
+window.closeAppModal = function() {
+  document.getElementById("app-modal").classList.add("hidden");
+};
+
+// ============================================================================
+// FITUR DOWNLOAD & CETAK REKAPITULASI INVENTARIS BUKU (KHUSUS KEPALA SEKOLAH)
+// ============================================================================
+window.downloadInventoryRecapExcel = function() {
+  if (!window.XLSX) {
+    showToast("Library Excel belum siap, silakan muat ulang halaman.", "error");
+    return;
+  }
+
+  const recap = computeInventoryRecapData();
+  const schoolTitle = `${state.principalInfo.schoolName || "SMP Negeri 3 Merbau"} – Perpustakaan Sekolah`;
+
+  const aoa = [
+    ["REKAPITULASI INVENTARIS BUKU"],
+    [schoolTitle],
+    [],
+    ["Berdasarkan Sumber"],
+    ["Sumber", "Jumlah Judul", "Total Eksemplar"],
+    ...recap.bySource.map(r => [r.label, r.titles, r.copies]),
+    ["TOTAL", recap.totalSourceTitles, recap.totalSourceCopies],
+    [],
+    ["Berdasarkan Kondisi"],
+    ["Kondisi", "Jumlah Judul", "Total Eksemplar"],
+    ...recap.conditionRows.map(r => [r.label, r.titles, r.copies]),
+    ["TOTAL", recap.totalConditionTitles, recap.totalConditionCopies]
+  ];
+
+  const wb = window.XLSX.utils.book_new();
+  const ws = window.XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 20 }];
+  window.XLSX.utils.book_append_sheet(wb, ws, "Rekap_Inventaris_Buku");
+
+  const dateStr = new Date().toISOString().split("T")[0];
+  window.XLSX.writeFile(wb, `Rekapitulasi_Inventaris_Buku_SMPN3_Merbau_${dateStr}.xlsx`);
+  showToast("File Excel Rekapitulasi Inventaris Buku berhasil diunduh!", "success");
+};
+
+window.printInventoryRecapReport = function() {
+  const recap = computeInventoryRecapData();
+  const logoSrc = getActiveSchoolLogo();
+  const schoolName = state.principalInfo.schoolName || "SMP Negeri 3 Merbau";
+
+  const printArea = document.getElementById("print-area");
+  printArea.innerHTML = `
+    <div style="max-width: 720px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1f2328;">
+      <div style="display: flex; align-items: center; gap: 14px; border-bottom: 2px solid #24292f; padding-bottom: 12px; margin-bottom: 20px;">
+        <img src="${logoSrc}" onerror="window.handleLogoError(this)" style="width: 52px; height: 52px; object-fit: contain;" />
+        <div>
+          <div style="font-size: 18px; font-weight: 800; letter-spacing: 0.3px;">REKAPITULASI INVENTARIS BUKU</div>
+          <div style="font-size: 14px; font-weight: 600; color: #57606a;">${schoolName} – Perpustakaan Sekolah</div>
+        </div>
+      </div>
+
+      <h3 style="font-size: 14px; font-weight: 700; margin: 16px 0 8px;">Berdasarkan Sumber</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
+        <thead>
+          <tr style="background: #f6f8fa;">
+            <th style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: left;">Sumber</th>
+            <th style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center;">Jumlah Judul</th>
+            <th style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center;">Total Eksemplar</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${recap.bySource.map(r => `
+            <tr>
+              <td style="border: 1px solid #d0d7de; padding: 8px 12px;">${r.label}</td>
+              <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${r.titles}</td>
+              <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${r.copies}</td>
+            </tr>
+          `).join('')}
+          <tr style="background: #f6f8fa; font-weight: 700;">
+            <td style="border: 1px solid #d0d7de; padding: 8px 12px;">TOTAL</td>
+            <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${recap.totalSourceTitles}</td>
+            <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${recap.totalSourceCopies}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size: 14px; font-weight: 700; margin: 16px 0 8px;">Berdasarkan Kondisi</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+          <tr style="background: #f6f8fa;">
+            <th style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: left;">Kondisi</th>
+            <th style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center;">Jumlah Judul</th>
+            <th style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center;">Total Eksemplar</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${recap.conditionRows.map(r => `
+            <tr>
+              <td style="border: 1px solid #d0d7de; padding: 8px 12px;">${r.label}</td>
+              <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${r.titles}</td>
+              <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${r.copies}</td>
+            </tr>
+          `).join('')}
+          <tr style="background: #f6f8fa; font-weight: 700;">
+            <td style="border: 1px solid #d0d7de; padding: 8px 12px;">TOTAL</td>
+            <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${recap.totalConditionTitles}</td>
+            <td style="border: 1px solid #d0d7de; padding: 8px 12px; text-align: center; font-family: monospace;">${recap.totalConditionCopies}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+  window.print();
+};
+
+// ============================================================================
+// FITUR UPLOAD, DOWNLOAD & TEMPLATE BUKU DAN USER (EXCEL .XLSX & .CSV)
+// ============================================================================
+
+// A1. Download Template Buku (.xlsx)
+window.downloadBookTemplate = function() {
+  if (!window.XLSX) {
+    showToast("Library Excel belum siap, silakan muat ulang halaman.", "error");
+    return;
+  }
+  const templateRows = [
+    {
+      "Barcode": "BK-2026101",
+      "Judul": "Kimia Dasar Analisis & Eksperimen",
+      "Penulis": "Prof. Raymond Chang",
+      "Penerbit": "Erlangga",
+      "Tahun": "2025",
+      "Kategori": "Sains & MIPA",
+      "Sumber Buku": "Bantuan BOS",
+      "Lokasi Rak": "Rak A-02",
+      "Total Stok": 10,
+      "Kondisi Baik": 9,
+      "Rusak Ringan": 1,
+      "Rusak Berat": 0,
+      "Hilang": 0
+    },
+    {
+      "Barcode": "BK-2026102",
+      "Judul": "Sejarah Peradaban Nusantara",
+      "Penulis": "Prof. Azyumardi Azra",
+      "Penerbit": "Kencana Prenada",
+      "Tahun": "2024",
+      "Kategori": "Sastra & Sejarah",
+      "Sumber Buku": "Bantuan Pemerintah",
+      "Lokasi Rak": "Rak B-01",
+      "Total Stok": 5,
+      "Kondisi Baik": 5,
+      "Rusak Ringan": 0,
+      "Rusak Berat": 0,
+      "Hilang": 0
+    }
+  ];
+
+  const guideRows = [
+    { "Kolom": "Barcode", "Keterangan": "Kode unik barcode buku / ISBN (Jika dikosongkan akan dibuat otomatis)" },
+    { "Kolom": "Judul", "Keterangan": "Judul lengkap buku (Wajib diisi)" },
+    { "Kolom": "Penulis", "Keterangan": "Nama pengarang / penulis buku" },
+    { "Kolom": "Penerbit", "Keterangan": "Nama penerbit buku" },
+    { "Kolom": "Tahun", "Keterangan": "Tahun terbit (Contoh: 2025)" },
+    { "Kolom": "Kategori", "Keterangan": "Pilihan: Teknologi | Sains & MIPA | Sastra & Sejarah | Sosial & Ekonomi | Agama & Karakter | Referensi Guru" },
+    { "Kolom": "Sumber Buku", "Keterangan": "Pilihan: Pembelian | Hibah / Sumbangan | Bantuan Pemerintah | Bantuan BOS | BOS Reguler | Afirmasi | Kinerja | Bantuan Pihak lain | Lainnya" },
+    { "Kolom": "Lokasi Rak", "Keterangan": "Kode rak penyimpanan (Contoh: Rak A-01)" },
+    { "Kolom": "Total Stok", "Keterangan": "Jumlah total eksemplar buku" },
+    { "Kolom": "Kondisi Baik / Rusak Ringan / Rusak Berat / Hilang", "Keterangan": "Jumlah eksemplar berdasarkan kondisi fisik buku untuk Rekap Inventaris" }
+  ];
+
+  const wb = window.XLSX.utils.book_new();
+  const wsData = window.XLSX.utils.json_to_sheet(templateRows);
+  wsData['!cols'] = [
+    { wch: 15 }, { wch: 34 }, { wch: 22 }, { wch: 18 },
+    { wch: 10 }, { wch: 18 }, { wch: 20 }, { wch: 12 }, { wch: 12 },
+    { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 }
+  ];
+  const wsGuide = window.XLSX.utils.json_to_sheet(guideRows);
+  wsGuide['!cols'] = [{ wch: 35 }, { wch: 85 }];
+
+  window.XLSX.utils.book_append_sheet(wb, wsData, "Template_Buku");
+  window.XLSX.utils.book_append_sheet(wb, wsGuide, "Petunjuk_Pengisian");
+  window.XLSX.writeFile(wb, "Template_Upload_Buku_SmartLib.xlsx");
+  showToast("Template Excel Katalog Buku berhasil diunduh!", "success");
+};
+
+// A2. Download Data Buku Saat Ini (.xlsx)
+window.exportBooksToExcel = function() {
+  if (!window.XLSX) {
+    showToast("Library Excel belum siap.", "error");
+    return;
+  }
+  if (state.books.length === 0) {
+    showToast("Belum ada data buku untuk diunduh.", "warning");
+    return;
+  }
+
+  const rows = state.books.map((b, idx) => {
+    const cond = getBookConditionBreakdown(b);
+    return {
+      "No": idx + 1,
+      "Barcode": b.barcode || "",
+      "Judul": b.title || "",
+      "Penulis": b.author || "",
+      "Penerbit": b.publisher || "",
+      "Tahun": b.year || "",
+      "Kategori": b.category || "Teknologi",
+      "Sumber Buku": b.bookSource || "BOS Reguler",
+      "Kategori Rekap Sumber": mapBookSourceToRekapCategory(b.bookSource),
+      "Lokasi Rak": b.shelf || "Rak A-01",
+      "Total Stok": Number(b.stockTotal || 0),
+      "Stok Tersedia": Number(b.stockAvailable || 0),
+      "Kondisi Baik": cond.baik,
+      "Rusak Ringan": cond.ringan,
+      "Rusak Berat": cond.berat,
+      "Hilang": cond.hilang,
+      "Tanggal Input": b.createdAt || ""
+    };
+  });
+
+  const wb = window.XLSX.utils.book_new();
+  const ws = window.XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [
+    { wch: 5 }, { wch: 15 }, { wch: 34 }, { wch: 22 }, { wch: 18 },
+    { wch: 10 }, { wch: 18 }, { wch: 20 }, { wch: 22 }, { wch: 12 },
+    { wch: 12 }, { wch: 14 }, { wch: 13 }, { wch: 13 }, { wch: 13 }, { wch: 10 }, { wch: 14 }
+  ];
+  window.XLSX.utils.book_append_sheet(wb, ws, "Data_Katalog_Buku");
+  const dateStr = new Date().toISOString().split("T")[0];
+  window.XLSX.writeFile(wb, `Data_Buku_SmartLib_${dateStr}.xlsx`);
+  showToast(`Berhasil mengunduh ${rows.length} data buku!`, "success");
+};
+
+// A3. Modal Upload Buku (.xlsx / .csv)
+window.openUploadBooksModal = function() {
+  if (!canManageBookFiles(state.currentUser?.role)) {
+    showToast("Role Anda tidak memiliki akses upload katalog buku.", "warning");
+    return;
+  }
+  state.pendingImportBooks = [];
+  const modal = document.getElementById("app-modal");
+  const content = document.getElementById("app-modal-content");
+
+  content.innerHTML = `
+    <div class="gh-box-header flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-[#1f2328] flex items-center gap-2">
+        <i data-lucide="file-up" class="w-4 h-4 text-[#0969da]"></i>
+        Upload / Impor Massal Data Buku (.xlsx / .csv)
+      </h3>
+      <button onclick="window.closeAppModal()" class="p-1 rounded-md text-[#656d76] hover:text-[#1f2328]">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="p-5 space-y-4 bg-white max-h-[82vh] overflow-y-auto">
+      <div class="p-3.5 rounded-md bg-[#ddf4ff] border border-[#b6e3ff] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="text-xs text-[#0969da] space-y-0.5">
+          <div class="font-bold">Langkah 1: Gunakan Template Resmi</div>
+          <p class="text-[#1f2328]/80">Unduh format Excel standar agar kolom Sumber Buku, Kondisi Buku, dan Barcode otomatis terbaca rapi.</p>
+        </div>
+        <button type="button" onclick="window.downloadBookTemplate()" class="gh-btn bg-white shrink-0">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-[#1f883d]"></i>
+          <span>Download Template Buku (.xlsx)</span>
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1.5">Langkah 2: Pilih File Excel (.xlsx / .xls) atau CSV (.csv)</label>
+        <input
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          onchange="window.handleBookFileSelect(event)"
+          class="gh-input w-full text-xs py-2 cursor-pointer file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#24292f] file:text-white hover:file:bg-[#1f2328]"
+        />
+      </div>
+
+      <div id="book-import-preview" class="hidden space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span id="book-import-count" class="font-bold text-[#1f883d]">0 buku siap diimpor</span>
+          <span class="text-[#656d76]">Jika kode Barcode sudah ada, data buku akan diperbarui</span>
+        </div>
+        <div id="book-import-table-wrap" class="border border-[#d0d7de] rounded-md overflow-x-auto max-h-56"></div>
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2 border-t border-[#d0d7de]">
+        <button type="button" onclick="window.closeAppModal()" class="gh-btn">Batal</button>
+        <button
+          id="btn-confirm-book-import"
+          type="button"
+          disabled
+          onclick="window.processBookImportSubmit()"
+          class="gh-btn gh-btn-primary opacity-50 cursor-not-allowed"
+        >
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+          <span>Proses Impor Buku</span>
+        </button>
+      </div>
+    </div>
+  `;
+  modal.classList.remove("hidden");
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.handleBookFileSelect = function(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const wb = window.XLSX.read(data, { type: "array" });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rawRows = window.XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+
+      if (!rawRows || rawRows.length === 0) {
+        showToast("File kosong atau format tidak dikenali.", "warning");
+        return;
+      }
+
+      const parsed = [];
+      rawRows.forEach((row) => {
+        const title = String(row["Judul"] || row["Judul Buku"] || row["title"] || "").trim();
+        if (!title) return;
+
+        const rawBarcode = String(row["Barcode"] || row["Kode Barcode"] || row["ISBN"] || row["barcode"] || "").trim().toUpperCase();
+        const barcode = rawBarcode || ("BK-" + Math.floor(100000 + Math.random() * 900000));
+        const author = String(row["Penulis"] || row["Pengarang"] || row["author"] || "-").trim();
+        const publisher = String(row["Penerbit"] || row["publisher"] || "-").trim();
+        const year = String(row["Tahun"] || row["year"] || "2025").trim();
+        const category = String(row["Kategori"] || row["category"] || "Teknologi").trim();
+
+        let rawSource = String(row["Sumber Buku"] || row["Sumber"] || row["bookSource"] || "BOS Reguler").trim();
+        const matchedSource = BOOK_SOURCES.find(s => s.toLowerCase() === rawSource.toLowerCase()) || "BOS Reguler";
+
+        const shelf = String(row["Lokasi Rak"] || row["Rak"] || row["shelf"] || "Rak A-01").trim();
+        const stockTotal = Math.max(1, parseInt(row["Total Stok"] || row["Stok"] || row["stockTotal"] || 5, 10) || 5);
+
+        const condRingan = Math.max(0, parseInt(row["Rusak Ringan"] || row["condRusakRingan"] || 0, 10) || 0);
+        const condBerat = Math.max(0, parseInt(row["Rusak Berat"] || row["condRusakBerat"] || 0, 10) || 0);
+        const condHilang = Math.max(0, parseInt(row["Hilang"] || row["condHilang"] || 0, 10) || 0);
+        const defaultBaik = Math.max(0, stockTotal - (condRingan + condBerat + condHilang));
+        const condBaik = row["Kondisi Baik"] !== undefined && row["Kondisi Baik"] !== ""
+          ? Math.max(0, parseInt(row["Kondisi Baik"], 10) || 0)
+          : defaultBaik;
+
+        parsed.push({
+          barcode,
+          title,
+          author,
+          publisher,
+          year,
+          category,
+          bookSource: matchedSource,
+          shelf,
+          stockTotal,
+          stockAvailable: stockTotal,
+          condBaik,
+          condRusakRingan: condRingan,
+          condRusakBerat: condBerat,
+          condHilang,
+          createdAt: new Date().toISOString().split("T")[0]
+        });
+      });
+
+      state.pendingImportBooks = parsed;
+      const previewBox = document.getElementById("book-import-preview");
+      const countEl = document.getElementById("book-import-count");
+      const tableWrap = document.getElementById("book-import-table-wrap");
+      const btnSubmit = document.getElementById("btn-confirm-book-import");
+
+      if (parsed.length === 0) {
+        showToast("Tidak ditemukan baris buku yang memiliki kolom 'Judul'.", "warning");
+        return;
+      }
+
+      previewBox.classList.remove("hidden");
+      countEl.textContent = `${parsed.length} koleksi buku siap diimpor`;
+      btnSubmit.disabled = false;
+      btnSubmit.classList.remove("opacity-50", "cursor-not-allowed");
+
+      tableWrap.innerHTML = `
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-[#f6f8fa] border-b border-[#d0d7de] text-[#656d76]">
+              <th class="py-2 px-3">Barcode</th>
+              <th class="py-2 px-3">Judul Buku</th>
+              <th class="py-2 px-3">Sumber Buku</th>
+              <th class="py-2 px-3">Rak</th>
+              <th class="py-2 px-3">Stok</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#d0d7de]">
+            ${parsed.slice(0, 25).map(item => `
+              <tr>
+                <td class="py-1.5 px-3 font-mono font-semibold text-[#0969da]">${item.barcode}</td>
+                <td class="py-1.5 px-3 font-medium text-[#1f2328]">${item.title}</td>
+                <td class="py-1.5 px-3"><span class="gh-label ${getSourceBadgeStyle(item.bookSource)}">${item.bookSource}</span></td>
+                <td class="py-1.5 px-3">${item.shelf}</td>
+                <td class="py-1.5 px-3 font-mono">${item.stockTotal}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      showToast("Gagal membaca file Excel/CSV. Pastikan format sesuai template.", "error");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+};
+
+window.processBookImportSubmit = async function() {
+  const items = state.pendingImportBooks || [];
+  if (items.length === 0) return;
+
+  if (IS_PREVIEW) {
+    let added = 0;
+    let updated = 0;
+    items.forEach(item => {
+      const existing = state.books.find(b => b.barcode.toUpperCase() === item.barcode.toUpperCase());
+      if (existing) {
+        const borrowed = Math.max(0, (existing.stockTotal || 0) - (existing.stockAvailable || 0));
+        Object.assign(existing, {
+          ...item,
+          stockAvailable: Math.max(0, item.stockTotal - borrowed)
+        });
+        updated++;
+      } else {
+        state.books.unshift({ id: "book-imp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), ...item });
+        added++;
+      }
+    });
+    state.pendingImportBooks = [];
+    window.closeAppModal();
+    showToast(`Impor selesai: ${added} buku baru ditambahkan, ${updated} diperbarui!`, "success");
+    renderApp();
+    return;
+  }
+
+  try {
+    for (const item of items) {
+      const existing = state.books.find(b => b.barcode.toUpperCase() === item.barcode.toUpperCase());
+      if (existing) {
+        const borrowed = Math.max(0, (existing.stockTotal || 0) - (existing.stockAvailable || 0));
+        await updateDoc(doc(db, "books", existing.id), {
+          ...item,
+          stockAvailable: Math.max(0, item.stockTotal - borrowed)
+        });
+      } else {
+        await addDoc(collection(db, "books"), item);
+      }
+    }
+    state.pendingImportBooks = [];
+    window.closeAppModal();
+    showToast(`Berhasil mengimpor ${items.length} buku ke Firestore!`, "success");
+  } catch (err) {
+    showToast("Terjadi kesalahan saat menyimpan sebagian buku ke Firestore.", "error");
+  }
+};
+
+// B1. Download Template User 6 Role (.xlsx) — Hanya Admin & Kepala Perpustakaan
+window.downloadMemberTemplate = function() {
+  if (!canManageUserFiles(state.currentUser?.role)) {
+    showToast("Role Anda tidak memiliki akses manajemen file data user.", "warning");
+    return;
+  }
+  if (!window.XLSX) {
+    showToast("Library Excel belum siap.", "error");
+    return;
+  }
+  const templateRows = [
+    {
+      "ID Barcode": "SIS-1002",
+      "Nama Lengkap": "Rizky Pratama Putra",
+      "Role": "siswa",
+      "Password": "123",
+      "Unit atau Kelas": "IX-B",
+      "No HP": "081234560001",
+      "Status": "active"
+    },
+    {
+      "ID Barcode": "GRU-3002",
+      "Nama Lengkap": "Dra. Ratna Sari, M.Pd.",
+      "Role": "guru",
+      "Password": "123",
+      "Unit atau Kelas": "Guru Bahasa Indonesia",
+      "No HP": "081234560002",
+      "Status": "active"
+    },
+    {
+      "ID Barcode": "PTK-2002",
+      "Nama Lengkap": "Andi Wijaya, A.Md.",
+      "Role": "pustakawan",
+      "Password": "123",
+      "Unit atau Kelas": "Staf Perpustakaan",
+      "No HP": "081234560003",
+      "Status": "active"
+    }
+  ];
+
+  const guideRows = [
+    { "Kolom": "ID Barcode", "Keterangan": "ID unik untuk Kartu Barcode & Login (Contoh: SIS-1002, GRU-3002, NIP/NIS)" },
+    { "Kolom": "Nama Lengkap", "Keterangan": "Nama lengkap pengguna beserta gelar jika ada (Wajib diisi)" },
+    { "Kolom": "Role", "Keterangan": "Pilihan 6 Role: kepala_sekolah | admin | kepala_perpustakaan | pustakawan | guru | siswa" },
+    { "Kolom": "Password", "Keterangan": "Password untuk login ke aplikasi (Default: 123 jika dikosongkan)" },
+    { "Kolom": "Unit atau Kelas", "Keterangan": "Kelas siswa (misal: IX-A) atau Jabatan/Unit Kerja guru/staf" },
+    { "Kolom": "No HP", "Keterangan": "Nomor WhatsApp / Telepon aktif" },
+    { "Kolom": "Status", "Keterangan": "Pilihan: active (Aktif) atau suspended (Ditangguhkan)" }
+  ];
+
+  const wb = window.XLSX.utils.book_new();
+  const wsData = window.XLSX.utils.json_to_sheet(templateRows);
+  wsData['!cols'] = [
+    { wch: 16 }, { wch: 30 }, { wch: 22 }, { wch: 14 },
+    { wch: 24 }, { wch: 18 }, { wch: 12 }
+  ];
+  const wsGuide = window.XLSX.utils.json_to_sheet(guideRows);
+  wsGuide['!cols'] = [{ wch: 18 }, { wch: 82 }];
+
+  window.XLSX.utils.book_append_sheet(wb, wsData, "Template_User");
+  window.XLSX.utils.book_append_sheet(wb, wsGuide, "Petunjuk_Role");
+  window.XLSX.writeFile(wb, "Template_Upload_User_SmartLib.xlsx");
+  showToast("Template Excel Data User (6 Role) berhasil diunduh!", "success");
+};
+
+// B2. Download Data User Saat Ini (.xlsx) — Hanya Admin & Kepala Perpustakaan
+window.exportMembersToExcel = function() {
+  if (!canManageUserFiles(state.currentUser?.role)) {
+    showToast("Role Anda tidak memiliki akses manajemen file data user.", "warning");
+    return;
+  }
+  if (!window.XLSX) {
+    showToast("Library Excel belum siap.", "error");
+    return;
+  }
+  if (state.members.length === 0) {
+    showToast("Belum ada data pengguna untuk diunduh.", "warning");
+    return;
+  }
+
+  const rows = state.members.map((m, idx) => ({
+    "No": idx + 1,
+    "ID Barcode": m.memberBarcode || "",
+    "Nama Lengkap": m.fullName || "",
+    "Role": m.role || "siswa",
+    "Label Role": ROLE_CONFIG[m.role || "siswa"]?.label || "Siswa",
+    "Password": m.password || "123",
+    "Unit atau Kelas": m.department || "",
+    "No HP": m.phone || "",
+    "Status": m.status || "active",
+    "Tanggal Terdaftar": m.createdAt || ""
+  }));
+
+  const wb = window.XLSX.utils.book_new();
+  const ws = window.XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [
+    { wch: 5 }, { wch: 16 }, { wch: 30 }, { wch: 20 }, { wch: 22 },
+    { wch: 14 }, { wch: 24 }, { wch: 18 }, { wch: 12 }, { wch: 16 }
+  ];
+  window.XLSX.utils.book_append_sheet(wb, ws, "Data_User_SmartLib");
+  const dateStr = new Date().toISOString().split("T")[0];
+  window.XLSX.writeFile(wb, `Data_User_SmartLib_${dateStr}.xlsx`);
+  showToast(`Berhasil mengunduh ${rows.length} data pengguna!`, "success");
+};
+
+// B3. Modal Upload User (.xlsx / .csv) — Hanya Admin & Kepala Perpustakaan
+window.openUploadMembersModal = function() {
+  if (!canManageUserFiles(state.currentUser?.role)) {
+    showToast("Role Anda tidak memiliki akses manajemen file data user.", "warning");
+    return;
+  }
+  state.pendingImportMembers = [];
+  const modal = document.getElementById("app-modal");
+  const content = document.getElementById("app-modal-content");
+
+  content.innerHTML = `
+    <div class="gh-box-header flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-[#1f2328] flex items-center gap-2">
+        <i data-lucide="users" class="w-4 h-4 text-[#0969da]"></i>
+        Upload / Impor Massal Data User & Anggota (.xlsx / .csv)
+      </h3>
+      <button onclick="window.closeAppModal()" class="p-1 rounded-md text-[#656d76] hover:text-[#1f2328]">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="p-5 space-y-4 bg-white max-h-[82vh] overflow-y-auto">
+      <div class="p-3.5 rounded-md bg-[#ddf4ff] border border-[#b6e3ff] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="text-xs text-[#0969da] space-y-0.5">
+          <div class="font-bold">Langkah 1: Gunakan Template User (Mendukung 6 Role)</div>
+          <p class="text-[#1f2328]/80">Unduh template Excel yang sudah dilengkapi petunjuk kode role (siswa, guru, pustakawan, dll.).</p>
+        </div>
+        <button type="button" onclick="window.downloadMemberTemplate()" class="gh-btn bg-white shrink-0">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-[#1f883d]"></i>
+          <span>Download Template User (.xlsx)</span>
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1.5">Langkah 2: Pilih File Excel (.xlsx / .xls) atau CSV (.csv)</label>
+        <input
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          onchange="window.handleMemberFileSelect(event)"
+          class="gh-input w-full text-xs py-2 cursor-pointer file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#24292f] file:text-white hover:file:bg-[#1f2328]"
+        />
+      </div>
+
+      <div id="member-import-preview" class="hidden space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span id="member-import-count" class="font-bold text-[#1f883d]">0 user siap diimpor</span>
+          <span class="text-[#656d76]">Jika ID Barcode sudah ada, data user akan diperbarui</span>
+        </div>
+        <div id="member-import-table-wrap" class="border border-[#d0d7de] rounded-md overflow-x-auto max-h-56"></div>
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2 border-t border-[#d0d7de]">
+        <button type="button" onclick="window.closeAppModal()" class="gh-btn">Batal</button>
+        <button
+          id="btn-confirm-member-import"
+          type="button"
+          disabled
+          onclick="window.processMemberImportSubmit()"
+          class="gh-btn gh-btn-primary opacity-50 cursor-not-allowed"
+        >
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+          <span>Proses Impor User</span>
+        </button>
+      </div>
+    </div>
+  `;
+  modal.classList.remove("hidden");
+  if (window.lucide) window.lucide.createIcons();
+};
+
+function normalizeRoleInput(rawRole) {
+  const clean = String(rawRole || "siswa").trim().toLowerCase().replace(/\s+/g, "_");
+  if (ROLE_CONFIG[clean]) return clean;
+  if (clean.includes("kepala_sekolah") || clean.includes("kepsek")) return "kepala_sekolah";
+  if (clean.includes("admin")) return "admin";
+  if (clean.includes("kepala_perpustakaan") || clean.includes("kaperpus")) return "kepala_perpustakaan";
+  if (clean.includes("pustakawan") || clean.includes("petugas")) return "pustakawan";
+  if (clean.includes("guru") || clean.includes("pengajar")) return "guru";
+  return "siswa";
+}
+
+window.handleMemberFileSelect = function(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const wb = window.XLSX.read(data, { type: "array" });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rawRows = window.XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+
+      if (!rawRows || rawRows.length === 0) {
+        showToast("File kosong atau format tidak sesuai.", "warning");
+        return;
+      }
+
+      const parsed = [];
+      rawRows.forEach((row) => {
+        const fullName = String(row["Nama Lengkap"] || row["Nama"] || row["fullName"] || "").trim();
+        if (!fullName) return;
+
+        const role = normalizeRoleInput(row["Role"] || row["Jabatan"] || row["role"] || "siswa");
+        const rawCode = String(row["ID Barcode"] || row["Barcode"] || row["NIS"] || row["NIP"] || row["memberBarcode"] || "").trim().toUpperCase();
+        const memberBarcode = rawCode || ("USR-" + Math.floor(1000 + Math.random() * 9000));
+        const password = String(row["Password"] || row["password"] || "123").trim() || "123";
+        const department = String(row["Unit atau Kelas"] || row["Kelas"] || row["Unit"] || row["department"] || ROLE_CONFIG[role].label).trim();
+        const phone = String(row["No HP"] || row["Telepon"] || row["WA"] || row["phone"] || "-").trim();
+        const rawStatus = String(row["Status"] || row["status"] || "active").trim().toLowerCase();
+        const status = rawStatus === "suspended" ? "suspended" : "active";
+
+        parsed.push({
+          memberBarcode,
+          fullName,
+          role,
+          password,
+          department,
+          phone,
+          status,
+          createdAt: new Date().toISOString().split("T")[0]
+        });
+      });
+
+      state.pendingImportMembers = parsed;
+      const previewBox = document.getElementById("member-import-preview");
+      const countEl = document.getElementById("member-import-count");
+      const tableWrap = document.getElementById("member-import-table-wrap");
+      const btnSubmit = document.getElementById("btn-confirm-member-import");
+
+      if (parsed.length === 0) {
+        showToast("Tidak ditemukan baris dengan kolom 'Nama Lengkap'.", "warning");
+        return;
+      }
+
+      previewBox.classList.remove("hidden");
+      countEl.textContent = `${parsed.length} data pengguna siap diimpor`;
+      btnSubmit.disabled = false;
+      btnSubmit.classList.remove("opacity-50", "cursor-not-allowed");
+
+      tableWrap.innerHTML = `
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-[#f6f8fa] border-b border-[#d0d7de] text-[#656d76]">
+              <th class="py-2 px-3">ID Barcode</th>
+              <th class="py-2 px-3">Nama Lengkap</th>
+              <th class="py-2 px-3">Role</th>
+              <th class="py-2 px-3">Unit / Kelas</th>
+              <th class="py-2 px-3">Password</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#d0d7de]">
+            ${parsed.slice(0, 25).map(item => `
+              <tr>
+                <td class="py-1.5 px-3 font-mono font-semibold text-[#1f2328]">${item.memberBarcode}</td>
+                <td class="py-1.5 px-3 font-medium text-[#1f2328]">${item.fullName}</td>
+                <td class="py-1.5 px-3"><span class="gh-label ${ROLE_CONFIG[item.role]?.badgeClass || ''}">${ROLE_CONFIG[item.role]?.label || item.role}</span></td>
+                <td class="py-1.5 px-3">${item.department}</td>
+                <td class="py-1.5 px-3 font-mono">${item.password}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      showToast("Gagal membaca file Excel/CSV.", "error");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+};
+
+window.processMemberImportSubmit = async function() {
+  const items = state.pendingImportMembers || [];
+  if (items.length === 0) return;
+
+  if (IS_PREVIEW) {
+    let added = 0;
+    let updated = 0;
+    items.forEach(item => {
+      const existing = state.members.find(m => m.memberBarcode.toUpperCase() === item.memberBarcode.toUpperCase());
+      if (existing) {
+        Object.assign(existing, item);
+        updated++;
+      } else {
+        state.members.unshift({ id: "mem-imp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), ...item });
+        added++;
+      }
+    });
+    state.pendingImportMembers = [];
+    window.closeAppModal();
+    showToast(`Impor selesai: ${added} user baru ditambahkan, ${updated} diperbarui!`, "success");
+    renderApp();
+    return;
+  }
+
+  try {
+    for (const item of items) {
+      const existing = state.members.find(m => m.memberBarcode.toUpperCase() === item.memberBarcode.toUpperCase());
+      if (existing) {
+        await updateDoc(doc(db, "members", existing.id), item);
+      } else {
+        await addDoc(collection(db, "members"), item);
+      }
+    }
+    state.pendingImportMembers = [];
+    window.closeAppModal();
+    showToast(`Berhasil mengimpor ${items.length} data pengguna ke Firestore!`, "success");
+  } catch (err) {
+    showToast("Gagal menyimpan sebagian data pengguna ke Firestore.", "error");
+  }
+};
+
+// ============================================================================
+// CRUD PROFIL SEKOLAH, BUKU, ANGGOTA & SIRKULASI
+// ============================================================================
+
+// 1. Edit Sambutan Kepala Sekolah & Logo Sekolah
+window.openEditPrincipalModal = function() {
+  const p = state.principalInfo;
+  const modal = document.getElementById("app-modal");
+  const content = document.getElementById("app-modal-content");
+
+  content.innerHTML = `
+    <div class="gh-box-header flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-[#1f2328] flex items-center gap-2">
+        <i data-lucide="file-text" class="w-4 h-4 text-[#656d76]"></i>
+        Edit Profil, Logo Sekolah & Sambutan
+      </h3>
+      <button onclick="window.closeAppModal()" class="p-1 rounded-md text-[#656d76] hover:text-[#1f2328]">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <form onsubmit="window.savePrincipalInfo(event)" class="p-5 space-y-3.5 max-h-[80vh] overflow-y-auto bg-white">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Nama Sekolah / Instansi</label>
+          <input name="schoolName" value="${p.schoolName}" required class="gh-input w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Slug Repositori Header</label>
+          <input name="repoSlug" value="${p.repoSlug || 'smpn3-merbau/smartlib'}" required class="gh-input w-full font-mono text-xs" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1">URL Logo Sekolah (ImgBB / Direct Image URL)</label>
+        <input name="schoolLogo" value="${p.schoolLogo || DEFAULT_SCHOOL_LOGO_LINK}" required class="gh-input w-full text-xs font-mono" placeholder="https://ibb.co/fVTzR5H6" />
+        <p class="text-[11px] text-[#656d76] mt-1">Default: <code class="font-mono">https://ibb.co/fVTzR5H6</code></p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Nama Kepala Sekolah</label>
+          <input name="principalName" value="${p.principalName}" required class="gh-input w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">NIP / Identitas</label>
+          <input name="principalNip" value="${p.principalNip}" required class="gh-input w-full font-mono text-xs" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1">URL Foto Kepala Sekolah</label>
+        <input name="principalPhoto" value="${p.principalPhoto}" required class="gh-input w-full text-xs" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1">Judul Sambutan Utama</label>
+        <input name="greetingTitle" value="${p.greetingTitle}" required class="gh-input w-full" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1">Isi Sambutan</label>
+        <textarea name="greetingMessage" rows="4" required class="gh-input w-full">${p.greetingMessage}</textarea>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1">Kutipan Literasi (Blockquote)</label>
+        <input name="quoteText" value="${p.quoteText}" required class="gh-input w-full" />
+      </div>
+      <div class="pt-3 flex justify-end gap-2 border-t border-[#d0d7de]">
+        <button type="button" onclick="window.closeAppModal()" class="gh-btn">Batal</button>
+        <button type="submit" class="gh-btn gh-btn-primary">Simpan Perubahan</button>
+      </div>
+    </form>
+  `;
+  modal.classList.remove("hidden");
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.savePrincipalInfo = async function(e) {
+  e.preventDefault();
+  const f = e.target;
+  const updated = {
+    schoolName: f.schoolName.value.trim(),
+    schoolLogo: f.schoolLogo.value.trim() || DEFAULT_SCHOOL_LOGO_LINK,
+    repoSlug: f.repoSlug.value.trim(),
+    principalName: f.principalName.value.trim(),
+    principalNip: f.principalNip.value.trim(),
+    principalPhoto: f.principalPhoto.value.trim(),
+    greetingTitle: f.greetingTitle.value.trim(),
+    greetingMessage: f.greetingMessage.value.trim(),
+    quoteText: f.quoteText.value.trim()
+  };
+
+  state.resolvedLogoUrl = null;
+  resolveImgbbViewerUrl(updated.schoolLogo);
+
+  if (IS_PREVIEW) {
+    state.principalInfo = updated;
+    window.closeAppModal();
+    showToast("Logo Sekolah & Sambutan Kepala Sekolah berhasil diperbarui!", "success");
+    renderApp();
+    return;
+  }
+
+  try {
+    await setDoc(doc(db, "settings", "schoolProfile"), updated, { merge: true });
+    window.closeAppModal();
+    showToast("Profil & Logo Sekolah disimpan ke Firestore!", "success");
+  } catch (err) {
+    showToast("Gagal menyimpan perubahan sambutan.", "error");
+  }
+};
+
+// 2. Modal Tambah/Edit Buku (Dengan Pilihan Sumber Buku & Rincian Kondisi Fisik)
+window.openBookModal = function(bookId = null) {
+  const existing = bookId ? state.books.find(b => b.id === bookId) : null;
+  const randomCode = "BK-" + Math.floor(100000 + Math.random() * 900000);
+  const cond = existing ? getBookConditionBreakdown(existing) : { baik: 5, ringan: 0, berat: 0, hilang: 0 };
+
+  const modal = document.getElementById("app-modal");
+  const content = document.getElementById("app-modal-content");
+
+  content.innerHTML = `
+    <div class="gh-box-header flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-[#1f2328] flex items-center gap-2">
+        <i data-lucide="book-marked" class="w-4 h-4 text-[#0969da]"></i>
+        ${existing ? "Edit Data Buku, Sumber & Kondisi" : "Tambah Koleksi Buku Baru"}
+      </h3>
+      <button onclick="window.closeAppModal()" class="p-1 rounded-md text-[#656d76] hover:text-[#1f2328]">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <form onsubmit="window.saveBookSubmit(event, '${bookId || ''}')" class="p-5 space-y-3.5 bg-white max-h-[82vh] overflow-y-auto">
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1">Kode Barcode Buku / ISBN</label>
+        <div class="flex gap-2">
+          <input id="modal-book-barcode" name="barcode" value="${existing ? existing.barcode : randomCode}" required class="gh-input flex-1 font-mono uppercase" placeholder="BK-2026001" />
+          <button type="button" onclick="window.openCameraScanner('modal-book-barcode', 'Scan ISBN / Barcode Buku Fisik')" class="gh-btn">
+            <i data-lucide="camera" class="w-3.5 h-3.5 text-[#0969da]"></i> Scan HP
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#1f2328] mb-1">Judul Lengkap Buku</label>
+        <input name="title" value="${existing ? existing.title : ''}" required class="gh-input w-full" placeholder="Contoh: IPA Terpadu Kelas IX" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Sumber Buku (Pengadaan / Rekap)</label>
+          <select name="bookSource" required class="gh-input w-full font-medium">
+            ${BOOK_SOURCES.map(src => `<option value="${src}" ${(existing?.bookSource || 'Bantuan BOS') === src ? 'selected' : ''}>${src}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Kategori Pustaka</label>
+          <select name="category" class="gh-input w-full">
+            ${["Teknologi", "Sains & MIPA", "Sastra & Sejarah", "Sosial & Ekonomi", "Agama & Karakter", "Referensi Guru"].map(cat => `<option value="${cat}" ${existing?.category === cat ? 'selected' : ''}>${cat}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Penulis / Pengarang</label>
+          <input name="author" value="${existing ? existing.author : ''}" required class="gh-input w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Penerbit & Tahun</label>
+          <div class="flex gap-2">
+            <input name="publisher" value="${existing ? existing.publisher : ''}" required placeholder="Penerbit" class="gh-input w-2/3" />
+            <input name="year" type="number" value="${existing ? existing.year : '2026'}" required placeholder="Tahun" class="gh-input w-1/3" />
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Lokasi Rak</label>
+          <input name="shelf" value="${existing ? existing.shelf : 'Rak A-01'}" required class="gh-input w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Total Eksemplar (Stok)</label>
+          <input id="modal-stock-total" name="stockTotal" type="number" min="1" value="${existing ? existing.stockTotal : 5}" required class="gh-input w-full font-mono" />
+        </div>
+      </div>
+
+      <!-- Rincian Kondisi Fisik Buku untuk Rekapitulasi Inventaris -->
+      <div class="p-3 rounded-md bg-[#f6f8fa] border border-[#d0d7de] space-y-2">
+        <div class="text-xs font-semibold text-[#1f2328] flex items-center justify-between">
+          <span>Rincian Kondisi Eksemplar Buku (Untuk Rekapitulasi Inventaris)</span>
+          <span class="text-[11px] text-[#656d76] font-normal">Jumlah kondisi menyesuaikan Total Eksemplar</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div>
+            <label class="block text-[11px] font-medium text-[#1a7f37] mb-0.5">Baik</label>
+            <input name="condBaik" type="number" min="0" value="${cond.baik}" required class="gh-input w-full font-mono text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-[#9a6700] mb-0.5">Rusak Ringan</label>
+            <input name="condRusakRingan" type="number" min="0" value="${cond.ringan}" required class="gh-input w-full font-mono text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-[#cf222e] mb-0.5">Rusak Berat</label>
+            <input name="condRusakBerat" type="number" min="0" value="${cond.berat}" required class="gh-input w-full font-mono text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-[#656d76] mb-0.5">Hilang</label>
+            <input name="condHilang" type="number" min="0" value="${cond.hilang}" required class="gh-input w-full font-mono text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2 border-t border-[#d0d7de]">
+        <button type="button" onclick="window.closeAppModal()" class="gh-btn">Batal</button>
+        <button type="submit" class="gh-btn gh-btn-primary">Simpan Buku</button>
+      </div>
+    </form>
+  `;
+  modal.classList.remove("hidden");
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.saveBookSubmit = async function(e, bookId) {
+  e.preventDefault();
+  const f = e.target;
+  const barcode = f.barcode.value.trim().toUpperCase();
+
+  const condBaik = Math.max(0, parseInt(f.condBaik.value, 10) || 0);
+  const condRusakRingan = Math.max(0, parseInt(f.condRusakRingan.value, 10) || 0);
+  const condRusakBerat = Math.max(0, parseInt(f.condRusakBerat.value, 10) || 0);
+  const condHilang = Math.max(0, parseInt(f.condHilang.value, 10) || 0);
+  const sumConditions = condBaik + condRusakRingan + condRusakBerat + condHilang;
+
+  let stockTotal = parseInt(f.stockTotal.value, 10) || 1;
+  if (sumConditions > 0 && sumConditions !== stockTotal) {
+    stockTotal = sumConditions;
+  }
+
+  const existing = bookId ? state.books.find(b => b.id === bookId) : null;
+  const borrowedCount = existing ? Math.max(0, (existing.stockTotal || 0) - (existing.stockAvailable || 0)) : 0;
+  const stockAvailable = Math.max(0, stockTotal - borrowedCount);
+
+  const payload = {
+    barcode,
+    title: f.title.value.trim(),
+    author: f.author.value.trim(),
+    publisher: f.publisher.value.trim(),
+    year: f.year.value.trim(),
+    category: f.category.value,
+    bookSource: f.bookSource.value,
+    shelf: f.shelf.value.trim(),
+    stockTotal,
+    stockAvailable,
+    condBaik,
+    condRusakRingan,
+    condRusakBerat,
+    condHilang,
+    createdAt: existing ? existing.createdAt : new Date().toISOString().split("T")[0]
+  };
+
+  if (IS_PREVIEW) {
+    if (existing) {
+      Object.assign(existing, payload);
+      showToast(`Buku "${payload.title}" (${payload.bookSource}) diperbarui!`, "success");
+    } else {
+      state.books.unshift({ id: "book-" + Date.now(), ...payload });
+      showToast(`Buku baru sumber ${payload.bookSource} ditambahkan!`, "success");
+    }
+    window.closeAppModal();
+    renderApp();
+    return;
+  }
+
+  try {
+    if (bookId) {
+      await updateDoc(doc(db, "books", bookId), payload);
+      showToast("Data buku berhasil diperbarui di Firestore!", "success");
+    } else {
+      await addDoc(collection(db, "books"), payload);
+      showToast("Buku baru berhasil disimpan ke Firestore!", "success");
+    }
+    window.closeAppModal();
+  } catch (err) {
+    showToast("Gagal menyimpan buku ke database.", "error");
+  }
+};
+
+window.deleteBookItem = async function(bookId) {
+  const target = state.books.find(b => b.id === bookId);
+  if (!target) return;
+
+  if (IS_PREVIEW) {
+    state.books = state.books.filter(b => b.id !== bookId);
+    showToast(`Buku "${target.title}" dihapus.`, "info");
+    renderApp();
+    return;
+  }
+
+  try {
+    await deleteDoc(doc(db, "books", bookId));
+    showToast("Buku berhasil dihapus dari Firestore.", "info");
+  } catch (err) {
+    showToast("Gagal menghapus buku.", "error");
+  }
+};
+
+// 3. Modal Tambah/Edit Pengguna & Anggota (Mendukung 6 Role)
+window.openMemberModal = function(memberId = null) {
+  const existing = memberId ? state.members.find(m => m.id === memberId) : null;
+  const randomMemberCode = "USR-" + Math.floor(1000 + Math.random() * 9000);
+
+  const modal = document.getElementById("app-modal");
+  const content = document.getElementById("app-modal-content");
+
+  content.innerHTML = `
+    <div class="gh-box-header flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-[#1f2328] flex items-center gap-2">
+        <i data-lucide="users" class="w-4 h-4 text-[#0969da]"></i>
+        ${existing ? "Edit Data Pengguna & Role" : "Tambah Pengguna / Anggota Baru"}
+      </h3>
+      <button onclick="window.closeAppModal()" class="p-1 rounded-md text-[#656d76] hover:text-[#1f2328]">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <form onsubmit="window.saveMemberSubmit(event, '${memberId || ''}')" class="p-5 space-y-3.5 bg-white">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Role / Jabatan Sistem</label>
+          <select name="role" required class="gh-input w-full font-medium">
+            ${Object.entries(ROLE_CONFIG).map(([key, cfg]) => `
+              <option value="${key}" ${(existing?.role || 'siswa') === key ? 'selected' : ''}>${cfg.label}</option>
+            `).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">ID Barcode / NIP / NIS</label>
+          <input name="memberBarcode" value="${existing ? existing.memberBarcode : randomMemberCode}" required class="gh-input w-full font-mono uppercase" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Nama Lengkap & Gelar</label>
+          <input name="fullName" value="${existing ? existing.fullName : ''}" required class="gh-input w-full" placeholder="Nama lengkap..." />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Password Login</label>
+          <input name="password" value="${existing ? existing.password : '123'}" required class="gh-input w-full font-mono" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Kelas / Unit Kerja</label>
+          <input name="department" value="${existing ? existing.department : 'IX-A'}" required class="gh-input w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">No. WhatsApp / HP</label>
+          <input name="phone" value="${existing ? existing.phone : ''}" required class="gh-input w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#1f2328] mb-1">Status Akun</label>
+          <select name="status" class="gh-input w-full">
+            <option value="active" ${existing?.status !== 'suspended' ? 'selected' : ''}>Active</option>
+            <option value="suspended" ${existing?.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2 border-t border-[#d0d7de]">
+        <button type="button" onclick="window.closeAppModal()" class="gh-btn">Batal</button>
+        <button type="submit" class="gh-btn gh-btn-primary">Simpan Pengguna</button>
+      </div>
+    </form>
+  `;
+  modal.classList.remove("hidden");
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.saveMemberSubmit = async function(e, memberId) {
+  e.preventDefault();
+  const f = e.target;
+  const payload = {
+    role: f.role.value,
+    memberBarcode: f.memberBarcode.value.trim().toUpperCase(),
+    password: f.password.value.trim(),
+    fullName: f.fullName.value.trim(),
+    department: f.department.value.trim(),
+    phone: f.phone.value.trim(),
+    status: f.status.value,
+    createdAt: new Date().toISOString().split("T")[0]
+  };
+
+  if (IS_PREVIEW) {
+    if (memberId) {
+      const target = state.members.find(m => m.id === memberId);
+      if (target) Object.assign(target, payload);
+      showToast(`Data ${payload.fullName} (${ROLE_CONFIG[payload.role]?.label}) diperbarui!`, "success");
+    } else {
+      state.members.unshift({ id: "mem-" + Date.now(), ...payload });
+      showToast(`Pengguna baru (${ROLE_CONFIG[payload.role]?.label}) ditambahkan!`, "success");
+    }
+    window.closeAppModal();
+    renderApp();
+    return;
+  }
+
+  try {
+    if (memberId) {
+      await updateDoc(doc(db, "members", memberId), payload);
+      showToast("Data pengguna diperbarui di Firestore!", "success");
+    } else {
+      await addDoc(collection(db, "members"), payload);
+      showToast("Pengguna baru disimpan ke Firestore!", "success");
+    }
+    window.closeAppModal();
+  } catch (err) {
+    showToast("Gagal menyimpan data pengguna.", "error");
+  }
+};
+
+window.deleteMemberItem = async function(memberId) {
+  if (IS_PREVIEW) {
+    state.members = state.members.filter(m => m.id !== memberId);
+    showToast("Data pengguna dihapus.", "info");
+    renderApp();
+    return;
+  }
+  try {
+    await deleteDoc(doc(db, "members", memberId));
+    showToast("Pengguna dihapus dari Firestore.", "info");
+  } catch (err) {
+    showToast("Gagal menghapus pengguna.", "error");
+  }
+};
+
+window.handleBorrowSubmit = async function(e) {
+  e.preventDefault();
+  const memberCode = state.circulationForm.memberBarcode.trim().toUpperCase();
+  const bookCode = state.circulationForm.bookBarcode.trim().toUpperCase();
+  const days = parseInt(state.circulationForm.borrowDays, 10) || 7;
+
+  const member = state.members.find(m => m.memberBarcode.toUpperCase() === memberCode);
+  if (!member) {
+    showToast(`Barcode Anggota/Guru/Siswa (${memberCode}) tidak ditemukan!`, "error");
+    return;
+  }
+  if (member.status !== "active") {
+    showToast(`Akun ${member.fullName} sedang ditangguhkan!`, "warning");
+    return;
+  }
+
+  const book = state.books.find(b => b.barcode.toUpperCase() === bookCode);
+  if (!book) {
+    showToast(`Barcode Buku (${bookCode}) tidak ditemukan di katalog!`, "error");
+    return;
+  }
+  if (book.stockAvailable <= 0) {
+    showToast(`Stok buku "${book.title}" sedang habis dipinjam!`, "warning");
+    return;
+  }
+
+  const today = new Date();
+  const due = new Date();
+  due.setDate(today.getDate() + days);
+
+  const trxPayload = {
+    trxCode: "PR-" + Math.floor(1000 + Math.random() * 9000),
+    memberId: member.id,
+    memberBarcode: member.memberBarcode,
+    memberName: member.fullName,
+    memberRole: member.role || "siswa",
+    bookId: book.id,
+    bookBarcode: book.barcode,
+    bookTitle: book.title,
+    borrowDate: today.toISOString().split("T")[0],
+    dueDate: due.toISOString().split("T")[0],
+    returnDate: null,
+    status: "borrowed",
+    fineAmount: 0
+  };
+
+  if (IS_PREVIEW) {
+    book.stockAvailable = Math.max(0, book.stockAvailable - 1);
+    state.transactions.unshift({ id: "trx-" + Date.now(), ...trxPayload });
+    state.circulationForm.bookBarcode = "";
+    playScannerBeep();
+    showToast(`Peminjaman "${book.title}" oleh ${member.fullName} berhasil!`, "success");
+    renderApp();
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "transactions"), trxPayload);
+    await updateDoc(doc(db, "books", book.id), {
+      stockAvailable: Math.max(0, book.stockAvailable - 1)
+    });
+    state.circulationForm.bookBarcode = "";
+    playScannerBeep();
+    showToast("Transaksi peminjaman berhasil tercatat di Firestore!", "success");
+  } catch (err) {
+    showToast("Gagal memproses transaksi peminjaman.", "error");
+  }
+};
+
+window.processReturnTransaction = async function(trxId) {
+  const trx = state.transactions.find(t => t.id === trxId);
+  if (!trx || trx.status === "returned") return;
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  const dueTime = new Date(trx.dueDate).getTime();
+  const nowTime = new Date(todayStr).getTime();
+  const diffDays = Math.max(0, Math.ceil((nowTime - dueTime) / (1000 * 60 * 60 * 24)));
+  const fine = diffDays * (parseInt(state.circulationForm.finePerDay, 10) || 1000);
+
+  const book = state.books.find(b => b.id === trx.bookId || b.barcode === trx.bookBarcode);
+
+  if (IS_PREVIEW) {
+    trx.status = "returned";
+    trx.returnDate = todayStr;
+    trx.fineAmount = fine;
+    if (book) book.stockAvailable = Math.min(book.stockTotal, book.stockAvailable + 1);
+    playScannerBeep();
+    showToast(
+      fine > 0
+        ? `Buku dikembalikan. Terlambat ${diffDays} hari (Denda Rp ${fine.toLocaleString('id-ID')})`
+        : `Buku "${trx.bookTitle}" telah dikembalikan tepat waktu!`,
+      fine > 0 ? "warning" : "success"
+    );
+    renderApp();
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "transactions", trx.id), {
+      status: "returned",
+      returnDate: todayStr,
+      fineAmount: fine
+    });
+    if (book) {
+      await updateDoc(doc(db, "books", book.id), {
+        stockAvailable: Math.min(book.stockTotal, book.stockAvailable + 1)
+      });
+    }
+    playScannerBeep();
+    showToast("Pengembalian buku berhasil disimpan!", "success");
+  } catch (err) {
+    showToast("Gagal memproses pengembalian buku.", "error");
+  }
+};
+
+window.processReturnByBookBarcode = function(scannedCode) {
+  const code = scannedCode.trim().toUpperCase();
+  const activeTrx = state.transactions.find(
+    t => t.bookBarcode.toUpperCase() === code && t.status === "borrowed"
+  );
+  if (!activeTrx) {
+    showToast(`Tidak ada pinjaman terbuka untuk Barcode Buku: ${code}`, "warning");
+    return;
+  }
+  window.processReturnTransaction(activeTrx.id);
+};
+
+window.printBookBarcodeLabel = function(bookId) {
+  const book = state.books.find(b => b.id === bookId);
+  if (!book) return;
+  const logoSrc = getActiveSchoolLogo();
+
+  const printArea = document.getElementById("print-area");
+  printArea.innerHTML = `
+    <div style="max-width: 360px; margin: 20px auto; border: 1px solid #1f2328; border-radius: 6px; padding: 16px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+      <img src="${logoSrc}" onerror="window.handleLogoError(this)" style="width: 36px; height: 36px; object-fit: contain; margin: 0 auto 6px;" />
+      <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #57606a;">${state.principalInfo.schoolName}</div>
+      <div style="font-size: 13px; font-weight: 700; color: #1f2328; margin-top: 4px;">${book.title}</div>
+      <div style="font-size: 11px; color: #57606a; margin: 4px 0 8px;">Rak: <strong>${book.shelf}</strong> · Sumber: <strong>${book.bookSource || 'BOS Reguler'}</strong></div>
+      <svg class="barcode-svg" data-code="${book.barcode}" data-height="46" style="margin: 0 auto;"></svg>
+    </div>
+  `;
+  renderAllBarcodes();
+  window.print();
+};
+
+window.printMemberCard = function(memberId) {
+  const member = state.members.find(m => m.id === memberId) || state.currentUser;
+  if (!member) return;
+  const rLabel = ROLE_CONFIG[member.role || 'siswa']?.label || 'Anggota';
+  const logoSrc = getActiveSchoolLogo();
+
+  const printArea = document.getElementById("print-area");
+  printArea.innerHTML = `
+    <div style="max-width: 380px; margin: 20px auto; border: 1px solid #24292f; border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+      <div style="background: #24292f; color: #ffffff; padding: 12px 16px; display: flex; align-items: center; gap: 10px;">
+        <img src="${logoSrc}" onerror="window.handleLogoError(this)" style="width: 36px; height: 36px; object-fit: contain; background: #fff; border-radius: 6px; padding: 2px;" />
+        <div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #8c959f;">KARTU IDENTITAS PERPUSTAKAAN</div>
+          <div style="font-size: 14px; font-weight: 700;">${state.principalInfo.schoolName}</div>
+        </div>
+      </div>
+      <div style="padding: 16px;">
+        <div style="font-size: 15px; font-weight: 700; color: #1f2328;">${member.fullName}</div>
+        <div style="font-size: 12px; color: #57606a; margin-top: 2px;">Role: <strong>${rLabel}</strong> · Unit: <strong>${member.department}</strong></div>
+        <div style="margin-top: 12px; text-align: center; background: #f6f8fa; padding: 10px; border: 1px solid #d0d7de; border-radius: 6px;">
+          <svg class="barcode-svg" data-code="${member.memberBarcode}" data-height="42" style="margin: 0 auto;"></svg>
+        </div>
+      </div>
+    </div>
+  `;
+  renderAllBarcodes();
+  window.print();
+};
+
+function renderPreviewBanner() {
+  const slot = document.getElementById("preview-banner-slot");
+  if (!slot) return;
+
+  if (!IS_PREVIEW) {
+    slot.innerHTML = "";
+    return;
+  }
+
+  slot.innerHTML = `
+    <div class="bg-[#ddf4ff] text-[#0969da] px-4 py-1.5 text-xs border-b border-[#b6e3ff] flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="gh-label bg-[#0969da] text-white font-semibold">Preview Mode</span>
+        <span class="text-[#1f2328]">Uji Coba 6 Role & Kamera Barcode:</span>
+      </div>
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button onclick="window.navigateScreen('landing')" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#24292f] text-white transition">
+          Landing Page
+        </button>
+        ${Object.entries(ROLE_CONFIG).map(([rKey, cfg]) => `
+          <button onclick="window.quickPreviewRoleLogin('${rKey}')" class="px-2 py-0.5 rounded text-[11px] font-medium ${state.currentUser?.role === rKey ? 'bg-[#0969da] text-white border-[#0969da]' : 'bg-white hover:bg-[#f6f8fa] text-[#1f2328] border-[#d0d7de]'} border transition">
+            ${cfg.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderLandingScreen() {
+  const p = state.principalInfo;
+  const logoSrc = getActiveSchoolLogo();
+  const totalBooks = state.books.reduce((acc, b) => acc + (Number(b.stockTotal) || 0), 0);
+  const availableBooks = state.books.reduce((acc, b) => acc + (Number(b.stockAvailable) || 0), 0);
+  const activeBorrows = state.transactions.filter(t => t.status === "borrowed").length;
+
+  const filteredPublicBooks = state.books.filter(b => {
+    const matchSource = state.publicSourceFilter === "Semua" || (b.bookSource || "BOS Reguler") === state.publicSourceFilter;
+    if (!state.publicSearchQuery) return matchSource;
+    const q = state.publicSearchQuery.toLowerCase();
+    const matchText = (
+      b.title.toLowerCase().includes(q) ||
+      b.author.toLowerCase().includes(q) ||
+      b.barcode.toLowerCase().includes(q) ||
+      b.category.toLowerCase().includes(q) ||
+      (b.bookSource || "").toLowerCase().includes(q)
+    );
+    return matchSource && matchText;
+  });
+
+  const recap = computeInventoryRecapData();
+
+  return `
+    <div class="min-h-screen flex flex-col bg-white">
+      <!-- GitHub Dark Top Header (#24292f) dengan Logo Sekolah -->
+      <header class="bg-[#24292f] text-white px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <img
+            src="${logoSrc}"
+            alt="Logo ${p.schoolName}"
+            onerror="window.handleLogoError(this)"
+            class="school-logo-img w-9 h-9 rounded-md bg-white p-0.5 object-contain border border-white/20 shrink-0"
+          />
+          <div>
+            <div class="font-bold text-white text-sm sm:text-base tracking-tight leading-tight">${p.schoolName}</div>
+            <div class="text-[11px] text-white/70">Perpustakaan Sekolah & Sistem Barcode</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="window.openCameraScanner('public-search', 'Scan Barcode Buku via Kamera HP')" class="px-2.5 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-xs font-medium border border-white/15 flex items-center gap-1.5 transition">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Scan Barcode</span>
+          </button>
+          <button onclick="window.navigateScreen('login', 'id_login')" class="px-3.5 py-1.5 rounded-md bg-[#1f883d] hover:bg-[#1a7f37] text-white text-xs font-semibold border border-white/15 flex items-center gap-1.5 transition shadow-sm">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+            <span>Sign in</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Container (Clean 2-Column Layout Tanpa Elemen Menumpuk) -->
+      <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+          <!-- Left Column (8 Cols): Sambutan Kepala Sekolah (Clean Layout) -->
+          <div id="readme-welcome" class="lg:col-span-8 gh-box overflow-hidden shadow-sm">
+            <div class="p-6 sm:p-8 space-y-6">
+              <!-- Kepala Sekolah Profile Card -->
+              <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-[#d0d7de]">
+                <img
+                  src="${p.principalPhoto}"
+                  alt="${p.principalName}"
+                  onerror="this.src='https://placehold.co/400x480/24292f/FFFFFF?text=Kepala+Sekolah'"
+                  class="w-24 h-32 rounded-md object-cover border border-[#d0d7de] shadow-sm shrink-0 bg-[#f6f8fa]"
+                />
+                <div class="text-center sm:text-left space-y-1.5">
+                  <span class="inline-flex items-center gap-1.5 gh-label bg-[#fbefff] text-[#8250df] border-[#d8b9ff]">
+                    <i data-lucide="award" class="w-3.5 h-3.5"></i>
+                    <span>Sambutan Kepala Sekolah</span>
+                  </span>
+                  <h1 class="text-lg sm:text-xl font-bold text-[#1f2328] leading-snug pt-1">${p.greetingTitle}</h1>
+                  <div class="text-sm font-semibold text-[#1f2328]">${p.principalName}</div>
+                  <div class="text-xs font-mono text-[#656d76]">${p.principalNip}</div>
+                </div>
+              </div>
+
+              <!-- Isi Sambutan -->
+              <div class="space-y-3.5 text-sm text-[#1f2328] leading-relaxed">
+                <p class="text-[#1f2328]/90">${p.greetingMessage}</p>
+                <blockquote class="pl-4 border-l-4 border-[#d0d7de] text-[#656d76] italic text-xs sm:text-sm py-1">
+                  "${p.quoteText}"
+                </blockquote>
+              </div>
+
+              <!-- Call to Action Footer -->
+              <div class="pt-4 border-t border-[#d0d7de] flex flex-wrap items-center justify-between gap-3">
+                <span class="text-xs text-[#656d76]">Silakan masuk untuk peminjaman buku & kartu anggota digital</span>
+                <button onclick="window.navigateScreen('login', 'id_login')" class="gh-btn gh-btn-primary">
+                  <span>Masuk ke Portal</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Sidebar (4 Cols): Ringkasan Koleksi & Sumber Buku -->
+          <div class="lg:col-span-4 space-y-4">
+            <div class="gh-box p-5 space-y-4 shadow-sm">
+              <div class="flex items-center gap-3">
+                <img
+                  src="${logoSrc}"
+                  alt="Logo Sekolah"
+                  onerror="window.handleLogoError(this)"
+                  class="school-logo-img w-10 h-10 rounded-md object-contain border border-[#d0d7de] bg-[#f6f8fa] p-1 shrink-0"
+                />
+                <div>
+                  <h3 class="text-sm font-bold text-[#1f2328]">${p.schoolName}</h3>
+                  <div class="text-xs text-[#656d76]">Perpustakaan Sekolah</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 pt-2 border-t border-[#d0d7de] text-center">
+                <div class="p-2 rounded bg-[#f6f8fa] border border-[#d0d7de]">
+                  <div class="text-base font-bold font-mono text-[#1f2328]">${state.books.length}</div>
+                  <div class="text-[11px] text-[#656d76]">Judul</div>
+                </div>
+                <div class="p-2 rounded bg-[#f6f8fa] border border-[#d0d7de]">
+                  <div class="text-base font-bold font-mono text-[#1f883d]">${availableBooks}/${totalBooks}</div>
+                  <div class="text-[11px] text-[#656d76]">Tersedia</div>
+                </div>
+                <div class="p-2 rounded bg-[#f6f8fa] border border-[#d0d7de]">
+                  <div class="text-base font-bold font-mono text-[#8250df]">${activeBorrows}</div>
+                  <div class="text-[11px] text-[#656d76]">Dipinjam</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ringkasan Inventaris Berdasarkan Sumber -->
+            <div class="gh-box p-5 space-y-3 shadow-sm">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-[#656d76]">Inventaris Berdasarkan Sumber</h3>
+              <div class="grid grid-cols-1 gap-1.5 text-xs pt-1">
+                ${recap.bySource.map(r => `
+                  <div class="flex items-center justify-between py-1 border-b border-[#f6f8fa] last:border-0">
+                    <span class="font-medium text-[#1f2328]">${r.label}</span>
+                    <span class="font-mono text-[#656d76]"><strong class="text-[#1f2328]">${r.titles}</strong> Judul (${r.copies} Eks)</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Katalog Publik -->
+        <section id="public-catalog" class="space-y-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="flex flex-1 items-center gap-2">
+              <div class="relative flex-1 max-w-md">
+                <i data-lucide="search" class="w-4 h-4 text-[#656d76] absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input
+                  type="text"
+                  value="${state.publicSearchQuery}"
+                  oninput="window.updatePublicSearch(this.value)"
+                  placeholder="Cari judul, penulis, barcode, atau sumber buku..."
+                  class="gh-input w-full pl-9"
+                />
+              </div>
+              <button onclick="window.openCameraScanner('public-search', 'Scan Barcode Buku untuk Cek Rak & Sumber')" class="gh-btn">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-[#0969da]"></i>
+                <span>Scan HP</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-[#656d76] font-medium">Sumber Buku:</span>
+              <select onchange="window.updatePublicSourceFilter(this.value)" class="gh-input text-xs font-medium py-1.5">
+                <option value="Semua" ${state.publicSourceFilter === 'Semua' ? 'selected' : ''}>Semua Sumber Buku</option>
+                ${BOOK_SOURCES.map(src => `<option value="${src}" ${state.publicSourceFilter === src ? 'selected' : ''}>${src}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="gh-box overflow-hidden shadow-sm">
+            <div class="gh-box-header flex items-center justify-between text-xs">
+              <span class="font-semibold text-[#1f2328] flex items-center gap-2">
+                <i data-lucide="book-open" class="w-4 h-4 text-[#0969da]"></i>
+                Daftar Koleksi Buku (${filteredPublicBooks.length})
+              </span>
+              <span class="text-[#656d76] font-mono">CODE-128</span>
+            </div>
+
+            ${filteredPublicBooks.length === 0 ? `
+              <div class="p-10 text-center text-xs text-[#656d76]">
+                Tidak ada buku yang cocok dengan pencarian atau filter sumber buku.
+              </div>
+            ` : `
+              <div class="divide-y divide-[#d0d7de]">
+                ${filteredPublicBooks.map(book => `
+                  <div class="p-4 hover:bg-[#f6f8fa] transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-mono text-xs font-semibold text-[#0969da] bg-[#ddf4ff] px-2 py-0.5 rounded border border-[#b6e3ff]">${book.barcode}</span>
+                        <h4 class="text-sm font-bold text-[#1f2328]">${book.title}</h4>
+                        <span class="gh-label ${getSourceBadgeStyle(book.bookSource || 'BOS Reguler')}">${book.bookSource || 'BOS Reguler'}</span>
+                        <span class="gh-label bg-[#f6f8fa] text-[#57606a] border-[#d0d7de]">${book.category}</span>
+                      </div>
+                      <p class="text-xs text-[#656d76]">
+                        Oleh <strong>${book.author}</strong> · ${book.publisher} (${book.year}) · Lokasi: <strong class="text-[#1f2328]">${book.shelf}</strong>
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-4 shrink-0">
+                      <span class="gh-label ${book.stockAvailable > 0 ? 'bg-[#dafbe1] text-[#1a7f37] border-[#aceebb]' : 'bg-[#ffebe9] text-[#cf222e] border-[#ffcecb]'}">
+                        ${book.stockAvailable > 0 ? `Tersedia ${book.stockAvailable}/${book.stockTotal}` : 'Dipinjam Penuh'}
+                      </span>
+                      <div class="bg-white border border-[#d0d7de] rounded px-2 py-1">
+                        <svg class="barcode-svg" data-code="${book.barcode}" data-height="28"></svg>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        </section>
+      </main>
+
+      <footer class="border-t border-[#d0d7de] bg-[#f6f8fa] py-5 px-4 text-center text-xs text-[#656d76]">
+        © ${new Date().getFullYear()} <strong>SmartLib</strong> — ${p.schoolName}
+      </footer>
+    </div>
+  `;
+}
+
+window.updatePublicSearch = function(val) {
+  state.publicSearchQuery = val;
+  renderApp();
+};
+
+window.updatePublicSourceFilter = function(val) {
+  state.publicSourceFilter = val;
+  renderApp();
+};
+
+function renderLoginScreen() {
+  const isIdLogin = state.loginTab === 'id_login';
+  const p = state.principalInfo;
+  const logoSrc = getActiveSchoolLogo();
+
+  return `
+    <div class="min-h-screen flex flex-col justify-center items-center p-4 bg-[#f6f8fa]">
+      <div class="max-w-md w-full space-y-4">
+        <div class="text-center space-y-2">
+          <img
+            src="${logoSrc}"
+            alt="Logo ${p.schoolName}"
+            onerror="window.handleLogoError(this)"
+            class="school-logo-img w-16 h-16 rounded-xl bg-white p-1.5 object-contain border border-[#d0d7de] mx-auto shadow-sm"
+          />
+          <h1 class="text-xl font-light text-[#1f2328] tracking-tight">Sign in to <strong>SmartLib</strong></h1>
+          <p class="text-xs text-[#656d76]">${p.schoolName}</p>
+        </div>
+
+        <!-- Tab Switcher: Login ID/Barcode (6 Role) vs Firebase Auth Email (Admin) -->
+        <div class="grid grid-cols-2 gap-1 bg-[#eff2f5] p-1 rounded-md border border-[#d0d7de]">
+          <button
+            type="button"
+            onclick="window.switchLoginTab('id_login')"
+            class="py-1.5 px-3 rounded text-xs font-semibold transition ${isIdLogin ? 'bg-white text-[#1f2328] shadow-sm border border-[#d0d7de]' : 'text-[#656d76] hover:text-[#1f2328]'}"
+          >
+            ID Barcode / NIP / NIS
+          </button>
+          <button
+            type="button"
+            onclick="window.switchLoginTab('admin_auth')"
+            class="py-1.5 px-3 rounded text-xs font-semibold transition ${!isIdLogin ? 'bg-white text-[#1f2328] shadow-sm border border-[#d0d7de]' : 'text-[#656d76] hover:text-[#1f2328]'}"
+          >
+            Email Admin (Auth)
+          </button>
+        </div>
+
+        <!-- Login Form Box -->
+        <div class="gh-box p-5 space-y-4 shadow-sm">
+          ${IS_PREVIEW ? `
+            <div class="p-3 rounded-md bg-[#fff8c5] border border-[#fae17d] text-xs text-[#9a6700] space-y-1.5">
+              <div class="font-semibold flex items-center gap-1.5">
+                <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+                <span>Akun Demo Mode Preview:</span>
+              </div>
+              ${isIdLogin
+                ? `<p>Siswa: <code class="font-mono font-bold">SIS-1001</code> / Pass: <code class="font-mono font-bold">123</code><br/>Pustakawan: <code class="font-mono font-bold">PTK-2001</code> / Pass: <code class="font-mono font-bold">123</code></p>`
+                : `<p>Email: <code class="font-mono font-bold">admin@sekolah.sch.id</code> / Pass: <code class="font-mono font-bold">admin123</code></p>`
+              }
+            </div>
+          ` : ''}
+
+          <form onsubmit="window.handleLoginSubmit(event)" class="space-y-3.5">
+            ${isIdLogin ? `
+              <div>
+                <label class="block text-xs font-semibold text-[#1f2328] mb-1.5">
+                  ID Barcode Pengguna (Kepsek / Pustakawan / Guru / Siswa)
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    id="login-member-barcode"
+                    name="memberBarcode"
+                    type="text"
+                    required
+                    placeholder="SIS-1001 atau PTK-2001"
+                    value="${IS_PREVIEW ? 'PTK-2001' : ''}"
+                    class="gh-input flex-1 font-mono uppercase"
+                  />
+                  <button
+                    type="button"
+                    onclick="window.openCameraScanner('login-member-barcode', 'Scan Kartu Identitas via Kamera HP')"
+                    class="gh-btn"
+                  >
+                    <i data-lucide="camera" class="w-3.5 h-3.5 text-[#0969da]"></i>
+                    <span>Scan Kartu</span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-[#1f2328] mb-1.5">Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  value="${IS_PREVIEW ? '123' : ''}"
+                  class="gh-input w-full"
+                />
+              </div>
+            ` : `
+              <div>
+                <label class="block text-xs font-semibold text-[#1f2328] mb-1.5">Email Admin (Firebase Authentication)</label>
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  value="${IS_PREVIEW ? 'admin@sekolah.sch.id' : ''}"
+                  class="gh-input w-full"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-[#1f2328] mb-1.5">Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  value="${IS_PREVIEW ? 'admin123' : ''}"
+                  class="gh-input w-full"
+                />
+              </div>
+            `}
+
+            <button type="submit" class="gh-btn gh-btn-primary w-full py-2 text-xs font-semibold">
+              Sign in
+            </button>
+          </form>
+        </div>
+
+        ${IS_PREVIEW ? `
+          <div class="gh-box p-4 bg-white space-y-2">
+            <div class="text-xs font-semibold text-[#1f2328]">Simulasi 1-Klik Masuk Sesuai Role (Khusus Preview):</div>
+            <div class="grid grid-cols-2 gap-1.5">
+              ${Object.entries(ROLE_CONFIG).map(([rKey, cfg]) => `
+                <button onclick="window.quickPreviewRoleLogin('${rKey}')" class="gh-btn justify-start text-xs">
+                  <i data-lucide="${cfg.icon}" class="w-3.5 h-3.5 text-[#0969da]"></i>
+                  <span class="truncate">${cfg.label}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="text-center">
+          <button onclick="window.navigateScreen('landing')" class="text-xs text-[#0969da] hover:underline inline-flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Kembali ke Halaman Sambutan Kepala Sekolah</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Komponen Tabel Rekapitulasi Inventaris Buku (Khusus Role Kepala Sekolah & Eksekutif)
+function renderPrincipalInventoryRecapSection() {
+  const recap = computeInventoryRecapData();
+  const logoSrc = getActiveSchoolLogo();
+  const schoolTitle = state.principalInfo.schoolName || "SMP Negeri 3 Merbau";
+
+  return `
+    <div class="gh-box overflow-hidden shadow-sm">
+      <!-- Header Dokumen Rekapitulasi Inventaris Buku -->
+      <div class="gh-box-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#f6f8fa]">
+        <div class="flex items-center gap-3.5">
+          <img
+            src="${logoSrc}"
+            alt="Logo Sekolah"
+            onerror="window.handleLogoError(this)"
+            class="school-logo-img w-11 h-11 rounded-md bg-white p-1 border border-[#d0d7de] object-contain shrink-0"
+          />
+          <div>
+            <h3 class="text-sm sm:text-base font-extrabold text-[#1f2328] tracking-tight uppercase">
+              REKAPITULASI INVENTARIS BUKU
+            </h3>
+            <p class="text-xs sm:text-sm font-semibold text-[#656d76]">
+              ${schoolTitle} – Perpustakaan Sekolah
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button onclick="window.printInventoryRecapReport()" class="gh-btn bg-white">
+            <i data-lucide="printer" class="w-3.5 h-3.5 text-[#656d76]"></i>
+            <span>Cetak Rekap</span>
+          </button>
+          <button onclick="window.downloadInventoryRecapExcel()" class="gh-btn gh-btn-primary">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Download Rekap (.xlsx)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dua Tabel Rekapitulasi: Berdasarkan Sumber & Berdasarkan Kondisi -->
+      <div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-white">
+        
+        <!-- Tabel 1: Berdasarkan Sumber -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs sm:text-sm font-bold text-[#1f2328] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#0969da]"></span>
+              <span>Berdasarkan Sumber</span>
+            </h4>
+            <span class="text-[11px] text-[#656d76]">Sumber Pengadaan Koleksi</span>
+          </div>
+
+          <div class="border border-[#d0d7de] rounded-md overflow-hidden">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-[#f6f8fa] border-b border-[#d0d7de] text-[#1f2328] font-bold">
+                  <th class="py-2.5 px-3.5 border-r border-[#d0d7de]">Sumber</th>
+                  <th class="py-2.5 px-3.5 text-center border-r border-[#d0d7de] w-28">Jumlah Judul</th>
+                  <th class="py-2.5 px-3.5 text-center w-32">Total Eksemplar</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#d0d7de]">
+                ${recap.bySource.map(row => `
+                  <tr class="hover:bg-[#f6f8fa]/70">
+                    <td class="py-2.5 px-3.5 font-medium text-[#1f2328] border-r border-[#d0d7de]">${row.label}</td>
+                    <td class="py-2.5 px-3.5 text-center font-mono font-semibold text-[#1f2328] border-r border-[#d0d7de]">${row.titles}</td>
+                    <td class="py-2.5 px-3.5 text-center font-mono font-semibold text-[#0969da]">${row.copies}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+              <tfoot>
+                <tr class="bg-[#f6f8fa] border-t-2 border-[#d0d7de] font-extrabold text-[#1f2328]">
+                  <td class="py-2.5 px-3.5 border-r border-[#d0d7de]">TOTAL</td>
+                  <td class="py-2.5 px-3.5 text-center font-mono border-r border-[#d0d7de]">${recap.totalSourceTitles}</td>
+                  <td class="py-2.5 px-3.5 text-center font-mono text-[#1f883d]">${recap.totalSourceCopies}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabel 2: Berdasarkan Kondisi -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs sm:text-sm font-bold text-[#1f2328] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#1f883d]"></span>
+              <span>Berdasarkan Kondisi</span>
+            </h4>
+            <span class="text-[11px] text-[#656d76]">Kondisi Fisik Buku</span>
+          </div>
+
+          <div class="border border-[#d0d7de] rounded-md overflow-hidden">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-[#f6f8fa] border-b border-[#d0d7de] text-[#1f2328] font-bold">
+                  <th class="py-2.5 px-3.5 border-r border-[#d0d7de]">Kondisi</th>
+                  <th class="py-2.5 px-3.5 text-center border-r border-[#d0d7de] w-28">Jumlah Judul</th>
+                  <th class="py-2.5 px-3.5 text-center w-32">Total Eksemplar</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#d0d7de]">
+                ${recap.conditionRows.map(row => `
+                  <tr class="hover:bg-[#f6f8fa]/70">
+                    <td class="py-2.5 px-3.5 font-medium text-[#1f2328] border-r border-[#d0d7de]">${row.label}</td>
+                    <td class="py-2.5 px-3.5 text-center font-mono font-semibold text-[#1f2328] border-r border-[#d0d7de]">${row.titles}</td>
+                    <td class="py-2.5 px-3.5 text-center font-mono font-semibold text-[#0969da]">${row.copies}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+              <tfoot>
+                <tr class="bg-[#f6f8fa] border-t-2 border-[#d0d7de] font-extrabold text-[#1f2328]">
+                  <td class="py-2.5 px-3.5 border-r border-[#d0d7de]">TOTAL</td>
+                  <td class="py-2.5 px-3.5 text-center font-mono border-r border-[#d0d7de]">${recap.totalConditionTitles}</td>
+                  <td class="py-2.5 px-3.5 text-center font-mono text-[#1f883d]">${recap.totalConditionCopies}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+function renderStaffDashboard() {
+  const role = state.currentUser?.role || "pustakawan";
+  const isPrincipal = role === "kepala_sekolah";
+  const canEditPrincipal = ["admin", "kepala_sekolah"].includes(role);
+  const canOperateCirculation = ["admin", "kepala_perpustakaan", "pustakawan"].includes(role);
+  const showBookFileBox = canManageBookFiles(role); // Admin, Kepala Perpustakaan, Pustakawan
+  const showUserFileBox = canManageUserFiles(role); // HANYA Admin & Kepala Perpustakaan (Pustakawan & Kepsek tidak tampil)
+  const logoSrc = getActiveSchoolLogo();
+
+  const totalTitles = state.books.length;
+  const totalCopies = state.books.reduce((s, b) => s + (Number(b.stockTotal) || 0), 0);
+  const availableCopies = state.books.reduce((s, b) => s + (Number(b.stockAvailable) || 0), 0);
+  const activeBorrows = state.transactions.filter(t => t.status === "borrowed").length;
+
+  return `
+    <div class="space-y-6">
+      <div class="gh-box p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#f6f8fa]">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <img
+            src="${logoSrc}"
+            alt="Logo Sekolah"
+            onerror="window.handleLogoError(this)"
+            class="school-logo-img w-12 h-12 rounded-lg bg-white p-1 object-contain border border-[#d0d7de] shrink-0"
+          />
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="gh-label ${ROLE_CONFIG[role]?.badgeClass || ''}">
+                <i data-lucide="${ROLE_CONFIG[role]?.icon || 'user'}" class="w-3.5 h-3.5"></i>
+                Role Aktif: ${ROLE_CONFIG[role]?.label || role}
+              </span>
+              <span class="text-xs font-mono text-[#656d76]">${state.currentUser?.memberBarcode || ''}</span>
+            </div>
+            <h2 class="text-base font-bold text-[#1f2328]">${state.principalInfo.schoolName} — Overview</h2>
+            <p class="text-xs text-[#656d76]">${ROLE_CONFIG[role]?.desc || ''}</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          ${canEditPrincipal ? `
+            <button onclick="window.openEditPrincipalModal()" class="gh-btn">
+              <i data-lucide="file-edit" class="w-3.5 h-3.5 text-[#8250df]"></i>
+              <span>Edit Logo & Sambutan</span>
+            </button>
+          ` : ''}
+          ${canOperateCirculation ? `
+            <button onclick="window.switchMenu('circulation')" class="gh-btn gh-btn-primary">
+              <i data-lucide="scan-barcode" class="w-3.5 h-3.5"></i>
+              <span>Loket Scan Barcode</span>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Pintasan File Excel:
+           - Kepala Sekolah: Tidak menampilkan Manajemen File Katalog Buku & Manajemen File Data User
+           - Pustakawan: Hanya menampilkan Manajemen File Katalog Buku (Manajemen File Data User dihapus)
+           - Admin & Kepala Perpustakaan: Menampilkan keduanya -->
+      ${(!isPrincipal && (showBookFileBox || showUserFileBox)) ? `
+        <div class="grid grid-cols-1 ${showBookFileBox && showUserFileBox ? 'md:grid-cols-2' : ''} gap-4">
+          ${showBookFileBox ? `
+            <div class="gh-box p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f6f8fa]/60">
+              <div class="space-y-0.5">
+                <div class="text-xs font-bold text-[#1f2328] flex items-center gap-1.5">
+                  <i data-lucide="book-marked" class="w-4 h-4 text-[#0969da]"></i>
+                  <span>Manajemen File Katalog Buku</span>
+                </div>
+                <p class="text-[11px] text-[#656d76]">Impor koleksi buku dari Excel, unduh data, atau ambil template.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+                <button onclick="window.downloadBookTemplate()" class="gh-btn" title="Download Template Excel Buku">
+                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-[#1f883d]"></i>
+                  <span>Template</span>
+                </button>
+                <button onclick="window.openUploadBooksModal()" class="gh-btn" title="Upload File Excel/CSV Buku">
+                  <i data-lucide="upload" class="w-3.5 h-3.5 text-[#0969da]"></i>
+                  <span>Upload</span>
+                </button>
+                <button onclick="window.exportBooksToExcel()" class="gh-btn" title="Download Semua Data Buku">
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-[#8250df]"></i>
+                  <span>Download</span>
+                </button>
+              </div>
+            </div>
+          ` : ''}
+
+          ${showUserFileBox ? `
+            <div class="gh-box p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f6f8fa]/60">
+              <div class="space-y-0.5">
+                <div class="text-xs font-bold text-[#1f2328] flex items-center gap-1.5">
+                  <i data-lucide="users" class="w-4 h-4 text-[#1f883d]"></i>
+                  <span>Manajemen File Data User (6 Role)</span>
+                </div>
+                <p class="text-[11px] text-[#656d76]">Upload data siswa/guru/staf massal atau ekspor ke Excel.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+                <button onclick="window.downloadMemberTemplate()" class="gh-btn" title="Download Template Excel User">
+                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-[#1f883d]"></i>
+                  <span>Template</span>
+                </button>
+                <button onclick="window.openUploadMembersModal()" class="gh-btn" title="Upload File Excel/CSV User">
+                  <i data-lucide="upload" class="w-3.5 h-3.5 text-[#0969da]"></i>
+                  <span>Upload</span>
+                </button>
+                <button onclick="window.exportMembersToExcel()" class="gh-btn" title="Download Semua Data User">
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-[#8250df]"></i>
+                  <span>Download</span>
+                </button>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      <!-- 4 Counter Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="gh-box p-4">
+          <div class="flex items-center justify-between text-xs text-[#656d76] mb-1">
+            <span>Total Koleksi Buku</span>
+            <i data-lucide="book-open" class="w-4 h-4 text-[#0969da]"></i>
+          </div>
+          <div class="text-2xl font-bold text-[#1f2328] font-mono">${totalTitles}</div>
+          <div class="text-xs text-[#656d76] mt-1">Total <strong>${totalCopies}</strong> eksemplar fisik</div>
+        </div>
+
+        <div class="gh-box p-4">
+          <div class="flex items-center justify-between text-xs text-[#656d76] mb-1">
+            <span>Tersedia di Rak</span>
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-[#1f883d]"></i>
+          </div>
+          <div class="text-2xl font-bold text-[#1f883d] font-mono">${availableCopies}</div>
+          <div class="text-xs text-[#656d76] mt-1">Siap dipinjam Guru/Siswa</div>
+        </div>
+
+        <div class="gh-box p-4">
+          <div class="flex items-center justify-between text-xs text-[#656d76] mb-1">
+            <span>Pinjaman Aktif</span>
+            <i data-lucide="git-pull-request" class="w-4 h-4 text-[#8250df]"></i>
+          </div>
+          <div class="text-2xl font-bold text-[#8250df] font-mono">${activeBorrows}</div>
+          <div class="text-xs text-[#656d76] mt-1">Sedang berada di peminjam</div>
+        </div>
+
+        <div class="gh-box p-4">
+          <div class="flex items-center justify-between text-xs text-[#656d76] mb-1">
+            <span>Total Pengguna (6 Role)</span>
+            <i data-lucide="users" class="w-4 h-4 text-[#9a6700]"></i>
+          </div>
+          <div class="text-2xl font-bold text-[#1f2328] font-mono">${state.members.length}</div>
+          <div class="text-xs text-[#656d76] mt-1">Terdaftar dengan ID Barcode</div>
+        </div>
+      </div>
+
+      <!-- Tabel Resmi REKAPITULASI INVENTARIS BUKU (Berdasarkan Sumber & Berdasarkan Kondisi) beserta Tombol Download -->
+      ${renderPrincipalInventoryRecapSection()}
+
+      <!-- Log Sirkulasi Barcode Terbaru (Dihapus untuk Kepala Sekolah sesuai instruksi, tetap tampil untuk Admin/Ka.Perpus/Pustakawan) -->
+      ${!isPrincipal ? `
+        <div class="gh-box overflow-hidden">
+          <div class="gh-box-header flex items-center justify-between">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#1f2328]">Log Sirkulasi Barcode Terbaru</h3>
+            <button onclick="window.switchMenu('transactions')" class="text-xs text-[#0969da] hover:underline font-medium">Semua Riwayat</button>
+          </div>
+          ${state.transactions.length === 0 ? `
+            <div class="p-8 text-center text-xs text-[#656d76]">Belum ada aktivitas peminjaman buku.</div>
+          ` : `
+            <div class="divide-y divide-[#d0d7de]">
+              ${state.transactions.slice(0, 5).map(t => `
+                <div class="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-[#f6f8fa]">
+                  <div class="flex items-center gap-2.5">
+                    <i data-lucide="${t.status === 'borrowed' ? 'git-pull-request' : 'git-merge'}" class="w-4 h-4 ${t.status === 'borrowed' ? 'text-[#1f883d]' : 'text-[#8250df]'}"></i>
+                    <div>
+                      <div class="text-xs font-semibold text-[#1f2328]">
+                        <span class="font-mono text-[#0969da]">${t.trxCode}</span> · ${t.bookTitle}
+                        <span class="font-mono text-[#656d76]">(${t.bookBarcode})</span>
+                      </div>
+                      <div class="text-[11px] text-[#656d76]">
+                        Peminjam: <strong>${t.memberName}</strong> (${t.memberBarcode}) · Tempo: ${t.dueDate}
+                      </div>
+                    </div>
+                  </div>
+                  <span class="gh-label ${t.status === 'borrowed' ? 'bg-[#dafbe1] text-[#1a7f37] border-[#aceebb]' : 'bg-[#fbefff] text-[#8250df] border-[#d8b9ff]'} w-fit">
+                    ${t.status === 'borrowed' ? 'Dipinjam' : 'Kembali'}
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderCirculationDesk() {
+  const cf = state.circulationForm;
+  const activeBorrows = state.transactions.filter(t => t.status === "borrowed");
+
+  const matchedMember = state.members.find(m => m.memberBarcode.toUpperCase() === cf.memberBarcode.trim().toUpperCase());
+  const matchedBook = state.books.find(b => b.barcode.toUpperCase() === cf.bookBarcode.trim().toUpperCase());
+
+  return `
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-5 gh-box overflow-hidden">
+        <div class="gh-box-header">
+          <h3 class="text-sm font-semibold text-[#1f2328] flex items-center gap-2">
+            <i data-lucide="scan-barcode" class="w-4 h-4 text-[#1f883d]"></i>
+            Loket Peminjaman Barcode
+          </h3>
+        </div>
+
+        <form onsubmit="window.handleBorrowSubmit(event)" class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#1f2328] mb-1">1. Barcode Peminjam (Guru / Siswa)</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                required
+                value="${cf.memberBarcode}"
+                oninput="window.updateCirculationField('memberBarcode', this.value)"
+                placeholder="Ketik / Scan SIS-1001"
+                class="gh-input flex-1 font-mono uppercase"
+              />
+              <button type="button" onclick="window.openCameraScanner('circulation-member', 'Scan Kartu Anggota via HP')" class="gh-btn">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-[#0969da]"></i> Scan HP
+              </button>
+            </div>
+            ${matchedMember ? `
+              <div class="mt-2 px-3 py-2 rounded-md bg-[#dafbe1] border border-[#aceebb] text-xs text-[#1a7f37] flex items-center justify-between">
+                <span><strong>${matchedMember.fullName}</strong> (${ROLE_CONFIG[matchedMember.role || 'siswa']?.label})</span>
+                <span class="font-mono font-bold">Verified ✓</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#1f2328] mb-1">2. Barcode Buku</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                required
+                value="${cf.bookBarcode}"
+                oninput="window.updateCirculationField('bookBarcode', this.value)"
+                placeholder="Ketik / Scan BK-2026001"
+                class="gh-input flex-1 font-mono uppercase"
+              />
+              <button type="button" onclick="window.openCameraScanner('circulation-book', 'Scan Barcode Buku via Kamera HP')" class="gh-btn">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-[#1f883d]"></i> Scan HP
+              </button>
+            </div>
+            ${matchedBook ? `
+              <div class="mt-2 px-3 py-2 rounded-md bg-[#ddf4ff] border border-[#b6e3ff] text-xs text-[#0969da] flex items-center justify-between">
+                <span class="truncate pr-2"><strong>${matchedBook.title}</strong> (${matchedBook.bookSource || 'BOS Reguler'})</span>
+                <span class="font-mono font-bold shrink-0">Stok: ${matchedBook.stockAvailable}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-[#1f2328] mb-1">Durasi Pinjam (Hari)</label>
+              <input type="number" min="1" max="30" value="${cf.borrowDays}" oninput="window.updateCirculationField('borrowDays', this.value)" class="gh-input w-full" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-[#1f2328] mb-1">Denda / Hari (Rp)</label>
+              <input type="number" step="500" value="${cf.finePerDay}" oninput="window.updateCirculationField('finePerDay', this.value)" class="gh-input w-full" />
+            </div>
+          </div>
+
+          <button type="submit" class="gh-btn gh-btn-primary w-full py-2 text-xs font-semibold">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Proses Peminjaman Buku</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="lg:col-span-7 gh-box overflow-hidden">
+        <div class="gh-box-header flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-semibold text-[#1f2328]">Pengembalian Cepat (Active Loans)</h3>
+            <p class="text-xs text-[#656d76]">Scan barcode buku yang dikembalikan atau klik tombol Terima Kembali</p>
+          </div>
+          <button onclick="window.openCameraScanner('QuickReturn', 'Scan Barcode Buku untuk Pengembalian Cepat')" class="gh-btn gh-btn-primary">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <span>Scan Pengembalian HP</span>
+          </button>
+        </div>
+
+        <div class="p-4">
+          ${activeBorrows.length === 0 ? `
+            <div class="p-8 text-center text-xs text-[#656d76] border border-dashed border-[#d0d7de] rounded-md">
+              Tidak ada pinjaman buku yang sedang aktif.
+            </div>
+          ` : `
+            <div class="divide-y divide-[#d0d7de] border border-[#d0d7de] rounded-md">
+              ${activeBorrows.map(trx => `
+                <div class="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#f6f8fa]">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-mono text-xs font-bold text-[#0969da]">${trx.bookBarcode}</span>
+                      <span class="text-sm font-semibold text-[#1f2328]">${trx.bookTitle}</span>
+                    </div>
+                    <p class="text-xs text-[#656d76] mt-0.5">
+                      Peminjam: <strong>${trx.memberName}</strong> (${trx.memberBarcode}) · Jatuh Tempo: <strong class="text-[#9a6700]">${trx.dueDate}</strong>
+                    </p>
+                  </div>
+                  <button onclick="window.processReturnTransaction('${trx.id}')" class="gh-btn gh-btn-primary shrink-0">
+                    <i data-lucide="git-merge" class="w-3.5 h-3.5"></i>
+                    <span>Terima Kembali</span>
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.updateCirculationField = function(field, val) {
+  state.circulationForm[field] = val;
+  renderApp();
+};
+
+function renderBooksCatalog() {
+  const role = state.currentUser?.role || "siswa";
+  const canManageBooks = canManageBookFiles(role); // Admin, Kepala Perpustakaan, Pustakawan (Kepsek tidak menampilkan manajemen file katalog buku)
+  const categories = ["Semua", "Teknologi", "Sains & MIPA", "Sastra & Sejarah", "Sosial & Ekonomi", "Agama & Karakter", "Referensi Guru"];
+
+  const filtered = state.books.filter(b => {
+    const matchCat = state.categoryFilter === "Semua" || b.category === state.categoryFilter;
+    const matchSource = state.sourceFilter === "Semua" || (b.bookSource || "BOS Reguler") === state.sourceFilter;
+    const q = state.searchQuery.toLowerCase();
+    const matchQuery = !q ||
+      b.title.toLowerCase().includes(q) ||
+      b.author.toLowerCase().includes(q) ||
+      b.barcode.toLowerCase().includes(q) ||
+      (b.bookSource || "").toLowerCase().includes(q);
+    return matchCat && matchSource && matchQuery;
+  });
+
+  return `
+    <div class="space-y-4">
+      <!-- Toolbar Upload / Download / Template Buku (Hanya tampil untuk Admin, Kepala Perpustakaan, dan Pustakawan) -->
+      ${canManageBooks ? `
+        <div class="gh-box p-3.5 bg-[#f6f8fa] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-xs font-bold text-[#1f2328] flex items-center gap-1.5">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-[#1f883d]"></i>
+              <span>Manajemen File Katalog Buku (Excel .xlsx / .csv)</span>
+            </h3>
+            <p class="text-[11px] text-[#656d76]">Unduh template resmi untuk upload buku massal atau download seluruh data katalog.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="window.downloadBookTemplate()" class="gh-btn bg-white">
+              <i data-lucide="file-down" class="w-3.5 h-3.5 text-[#1f883d]"></i>
+              <span>Template Buku</span>
+            </button>
+            <button onclick="window.openUploadBooksModal()" class="gh-btn bg-white">
+              <i data-lucide="file-up" class="w-3.5 h-3.5 text-[#0969da]"></i>
+              <span>Upload Buku</span>
+            </button>
+            <button onclick="window.exportBooksToExcel()" class="gh-btn bg-white">
+              <i data-lucide="download" class="w-3.5 h-3.5 text-[#8250df]"></i>
+              <span>Download Buku (${state.books.length})</span>
+            </button>
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div class="flex flex-1 items-center gap-2">
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 text-[#656d76] absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input
+              type="text"
+              value="${state.searchQuery}"
+              oninput="window.updateCatalogSearch(this.value)"
+              placeholder="Filter judul, penulis, kode barcode..."
+              class="gh-input w-full pl-9"
+            />
+          </div>
+          <button onclick="window.openCameraScanner('catalog-search', 'Scan Barcode Buku via Kamera HP')" class="gh-btn">
+            <i data-lucide="camera" class="w-3.5 h-3.5 text-[#0969da]"></i>
+            <span>Scan HP</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <select onchange="window.updateSourceFilter(this.value)" class="gh-input text-xs font-medium py-1.5">
+            <option value="Semua" ${state.sourceFilter === 'Semua' ? 'selected' : ''}>Sumber: Semua</option>
+            ${BOOK_SOURCES.map(s => `<option value="${s}" ${state.sourceFilter === s ? 'selected' : ''}>Sumber: ${s}</option>`).join('')}
+          </select>
+
+          <select onchange="window.updateCategoryFilter(this.value)" class="gh-input text-xs font-medium py-1.5">
+            ${categories.map(c => `<option value="${c}" ${state.categoryFilter === c ? 'selected' : ''}>Kategori: ${c}</option>`).join('')}
+          </select>
+
+          ${canManageBooks ? `
+            <button onclick="window.openBookModal()" class="gh-btn gh-btn-primary">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Tambah Buku</span>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+
+      <div class="gh-box overflow-hidden">
+        <div class="gh-box-header flex items-center justify-between text-xs">
+          <span class="font-semibold text-[#1f2328]">${filtered.length} Buku ditemukan</span>
+          <span class="text-[#656d76]">Dilengkapi Label Sumber Pengadaan, Kondisi & Barcode Code-128</span>
+        </div>
+
+        ${filtered.length === 0 ? `
+          <div class="p-10 text-center text-xs text-[#656d76]">Tidak ada koleksi buku yang sesuai filter.</div>
+        ` : `
+          <div class="divide-y divide-[#d0d7de]">
+            ${filtered.map(book => {
+              const cond = getBookConditionBreakdown(book);
+              return `
+                <div class="p-4 hover:bg-[#f6f8fa] transition flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div class="space-y-1.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="font-mono text-xs font-bold text-[#0969da] bg-[#ddf4ff] px-2 py-0.5 rounded border border-[#b6e3ff]">${book.barcode}</span>
+                      <h4 class="text-sm font-bold text-[#1f2328]">${book.title}</h4>
+                      <span class="gh-label ${getSourceBadgeStyle(book.bookSource || 'BOS Reguler')}" title="Sumber Buku">
+                        <i data-lucide="tag" class="w-3 h-3"></i>
+                        ${book.bookSource || 'BOS Reguler'}
+                      </span>
+                      <span class="gh-label bg-[#f6f8fa] text-[#57606a] border-[#d0d7de]">${book.category}</span>
+                    </div>
+                    <div class="text-xs text-[#656d76] flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span>Penulis: <strong class="text-[#1f2328]">${book.author}</strong></span>
+                      <span>·</span>
+                      <span>Penerbit: ${book.publisher} (${book.year})</span>
+                      <span>·</span>
+                      <span>Lokasi: <strong class="text-[#0969da]">${book.shelf}</strong></span>
+                      <span>·</span>
+                      <span class="font-semibold ${book.stockAvailable > 0 ? 'text-[#1f883d]' : 'text-[#cf222e]'}">
+                        Stok: ${book.stockAvailable}/${book.stockTotal} Eks
+                      </span>
+                      <span>·</span>
+                      <span class="text-[11px]">
+                        Kondisi (Baik: <strong>${cond.baik}</strong>, R.Ringan: <strong>${cond.ringan}</strong>, R.Berat: <strong>${cond.berat}</strong>, Hilang: <strong>${cond.hilang}</strong>)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <div class="bg-white border border-[#d0d7de] rounded px-2 py-1">
+                      <svg class="barcode-svg" data-code="${book.barcode}" data-height="30"></svg>
+                    </div>
+                    ${canManageBooks ? `
+                      <button onclick="window.printBookBarcodeLabel('${book.id}')" class="gh-btn" title="Cetak Label Barcode">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                        <span>Cetak</span>
+                      </button>
+                      <button onclick="window.openBookModal('${book.id}')" class="gh-btn" title="Edit Buku">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      </button>
+                      <button onclick="window.deleteBookItem('${book.id}')" class="gh-btn gh-btn-danger" title="Hapus Buku">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+window.updateCatalogSearch = function(val) {
+  state.searchQuery = val;
+  renderApp();
+};
+
+window.updateCategoryFilter = function(val) {
+  state.categoryFilter = val;
+  renderApp();
+};
+
+window.updateSourceFilter = function(val) {
+  state.sourceFilter = val;
+  renderApp();
+};
+
+function renderMembersManagement() {
+  const myRole = state.currentUser?.role || "pustakawan";
+  const canEditUsers = ["admin", "kepala_perpustakaan", "pustakawan"].includes(myRole);
+  const allowUserFileManagement = canManageUserFiles(myRole); // HANYA Admin & Kepala Perpustakaan (Pustakawan & Kepsek dihapus)
+
+  const filteredMembers = state.members.filter(m => {
+    if (state.roleFilter === "Semua") return true;
+    return (m.role || "siswa") === state.roleFilter;
+  });
+
+  return `
+    <div class="space-y-4">
+      <!-- Toolbar Upload / Download / Template User (HANYA tampil untuk Admin & Kepala Perpustakaan) -->
+      ${allowUserFileManagement ? `
+        <div class="gh-box p-3.5 bg-[#f6f8fa] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-xs font-bold text-[#1f2328] flex items-center gap-1.5">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-[#0969da]"></i>
+              <span>Manajemen File Data User / Anggota 6 Role (.xlsx / .csv)</span>
+            </h3>
+            <p class="text-[11px] text-[#656d76]">Unduh template resmi untuk upload data Siswa, Guru, maupun Staf sekaligus.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="window.downloadMemberTemplate()" class="gh-btn bg-white">
+              <i data-lucide="file-down" class="w-3.5 h-3.5 text-[#1f883d]"></i>
+              <span>Template User</span>
+            </button>
+            <button onclick="window.openUploadMembersModal()" class="gh-btn bg-white">
+              <i data-lucide="file-up" class="w-3.5 h-3.5 text-[#0969da]"></i>
+              <span>Upload User</span>
+            </button>
+            <button onclick="window.exportMembersToExcel()" class="gh-btn bg-white">
+              <i data-lucide="download" class="w-3.5 h-3.5 text-[#8250df]"></i>
+              <span>Download User (${state.members.length})</span>
+            </button>
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-sm font-bold text-[#1f2328]">Manajemen Pengguna & Kartu Anggota (6 Role)</h3>
+          <p class="text-xs text-[#656d76]">Daftar Kepala Sekolah, Admin, Kepala Perpustakaan, Pustakawan, Guru, dan Siswa.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select onchange="window.updateRoleFilter(this.value)" class="gh-input text-xs font-medium py-1.5">
+            <option value="Semua" ${state.roleFilter === 'Semua' ? 'selected' : ''}>Filter: Semua Role</option>
+            ${Object.entries(ROLE_CONFIG).map(([rKey, cfg]) => `
+              <option value="${rKey}" ${state.roleFilter === rKey ? 'selected' : ''}>Role: ${cfg.label}</option>
+            `).join('')}
+          </select>
+          ${canEditUsers ? `
+            <button onclick="window.openMemberModal()" class="gh-btn gh-btn-primary">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+              <span>Tambah Pengguna</span>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+
+      <div class="gh-box overflow-hidden">
+        <div class="gh-box-header flex items-center justify-between text-xs">
+          <span class="font-semibold text-[#1f2328]">${filteredMembers.length} Pengguna Terdaftar</span>
+          <span class="text-[#656d76]">Mendukung Login ID Barcode & Cetak Kartu</span>
+        </div>
+
+        ${filteredMembers.length === 0 ? `
+          <div class="p-10 text-center text-xs text-[#656d76]">Belum ada pengguna pada role ini.</div>
+        ` : `
+          <div class="divide-y divide-[#d0d7de]">
+            ${filteredMembers.map(m => {
+              const rKey = m.role || 'siswa';
+              const rCfg = ROLE_CONFIG[rKey] || ROLE_CONFIG.siswa;
+              return `
+                <div class="p-4 hover:bg-[#f6f8fa] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="font-mono text-xs font-bold text-[#1f2328] bg-[#eff2f5] px-2 py-0.5 rounded border border-[#d0d7de]">${m.memberBarcode}</span>
+                      <span class="text-sm font-bold text-[#1f2328]">${m.fullName}</span>
+                      <span class="gh-label ${rCfg.badgeClass}">
+                        <i data-lucide="${rCfg.icon}" class="w-3 h-3"></i>
+                        ${rCfg.label}
+                      </span>
+                      <span class="gh-label ${m.status === 'active' ? 'bg-[#dafbe1] text-[#1a7f37]' : 'bg-[#ffebe9] text-[#cf222e]'}">
+                        ${m.status === 'active' ? 'Active' : 'Suspended'}
+                      </span>
+                    </div>
+                    <div class="text-xs text-[#656d76]">
+                      Unit/Kelas: <strong>${m.department}</strong> · Telp: ${m.phone} · Password Login: <code class="font-mono bg-[#f6f8fa] px-1.5 py-0.5 rounded border border-[#d0d7de]">${m.password}</code>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <div class="bg-white border border-[#d0d7de] rounded px-2 py-1">
+                      <svg class="barcode-svg" data-code="${m.memberBarcode}" data-height="28"></svg>
+                    </div>
+                    <button onclick="window.printMemberCard('${m.id}')" class="gh-btn" title="Cetak Kartu">
+                      <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                    </button>
+                    ${canEditUsers ? `
+                      <button onclick="window.openMemberModal('${m.id}')" class="gh-btn">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      </button>
+                      <button onclick="window.deleteMemberItem('${m.id}')" class="gh-btn gh-btn-danger">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+window.updateRoleFilter = function(val) {
+  state.roleFilter = val;
+  renderApp();
+};
+
+function renderTransactionsHistory() {
+  const canProcessReturn = ["admin", "kepala_perpustakaan", "pustakawan"].includes(state.currentUser?.role);
+  const list = state.transactions.filter(t => {
+    if (state.trxFilter === "Semua") return true;
+    return t.status === state.trxFilter;
+  });
+
+  return `
+    <div class="gh-box overflow-hidden">
+      <div class="gh-box-header flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-sm font-semibold text-[#1f2328]">Riwayat Transaksi Sirkulasi & Denda</h3>
+          <p class="text-xs text-[#656d76]">Log peminjaman buku oleh Guru dan Siswa</p>
+        </div>
+        <select onchange="window.updateTrxFilter(this.value)" class="gh-input text-xs font-medium py-1">
+          <option value="Semua" ${state.trxFilter === 'Semua' ? 'selected' : ''}>Semua Status</option>
+          <option value="borrowed" ${state.trxFilter === 'borrowed' ? 'selected' : ''}>Sedang Dipinjam</option>
+          <option value="returned" ${state.trxFilter === 'returned' ? 'selected' : ''}>Sudah Kembali</option>
+        </select>
+      </div>
+
+      ${list.length === 0 ? `
+        <div class="p-10 text-center text-xs text-[#656d76]">Belum ada data transaksi sirkulasi.</div>
+      ` : `
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-[#f6f8fa] text-[#656d76] border-b border-[#d0d7de]">
+                <th class="py-2.5 px-4 font-semibold">Kode TRX</th>
+                <th class="py-2.5 px-4 font-semibold">Peminjam</th>
+                <th class="py-2.5 px-4 font-semibold">Buku & Barcode</th>
+                <th class="py-2.5 px-4 font-semibold">Pinjam / Tempo</th>
+                <th class="py-2.5 px-4 font-semibold">Denda</th>
+                <th class="py-2.5 px-4 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#d0d7de]">
+              ${list.map(t => `
+                <tr class="hover:bg-[#f6f8fa]">
+                  <td class="py-3 px-4 font-mono font-bold text-[#0969da]">${t.trxCode}</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold text-[#1f2328]">${t.memberName}</div>
+                    <div class="font-mono text-[#656d76]">${t.memberBarcode}</div>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold text-[#1f2328]">${t.bookTitle}</div>
+                    <div class="font-mono text-[#656d76]">${t.bookBarcode}</div>
+                  </td>
+                  <td class="py-3 px-4 text-[#656d76]">
+                    <div>Pinjam: ${t.borrowDate}</div>
+                    <div>Tempo: <strong class="text-[#1f2328]">${t.dueDate}</strong></div>
+                  </td>
+                  <td class="py-3 px-4 font-mono font-semibold ${t.fineAmount > 0 ? 'text-[#cf222e]' : 'text-[#656d76]'}">
+                    Rp ${(t.fineAmount || 0).toLocaleString('id-ID')}
+                  </td>
+                  <td class="py-3 px-4">
+                    ${t.status === 'borrowed' && canProcessReturn ? `
+                      <button onclick="window.processReturnTransaction('${t.id}')" class="gh-btn gh-btn-primary">
+                        Kembalikan
+                      </button>
+                    ` : `
+                      <span class="gh-label ${t.status === 'borrowed' ? 'bg-[#dafbe1] text-[#1a7f37]' : 'bg-[#fbefff] text-[#8250df]'}">
+                        ${t.status === 'borrowed' ? 'Dipinjam' : `Kembali (${t.returnDate})`}
+                      </span>
+                    `}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+window.updateTrxFilter = function(val) {
+  state.trxFilter = val;
+  renderApp();
+};
+
+function renderMemberHome() {
+  const u = state.currentUser;
+  const rCfg = ROLE_CONFIG[u.role || 'siswa'] || ROLE_CONFIG.siswa;
+  const myLoans = state.transactions.filter(t => t.memberBarcode === u.memberBarcode);
+  const activeLoans = myLoans.filter(t => t.status === "borrowed");
+  const logoSrc = getActiveSchoolLogo();
+
+  return `
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Kartu Anggota Digital dengan Logo Sekolah -->
+      <div class="lg:col-span-5 gh-box overflow-hidden">
+        <div class="bg-[#24292f] text-white p-5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <img
+              src="${logoSrc}"
+              alt="Logo Sekolah"
+              onerror="window.handleLogoError(this)"
+              class="school-logo-img w-10 h-10 rounded-md bg-white p-1 object-contain shrink-0"
+            />
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-white/70">KARTU IDENTITAS PERPUSTAKAAN</span>
+              <h3 class="text-sm font-bold mt-0.5">${state.principalInfo.schoolName}</h3>
+            </div>
+          </div>
+          <span class="gh-label ${rCfg.badgeClass} shrink-0">${rCfg.label}</span>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <div>
+            <div class="text-lg font-bold text-[#1f2328]">${u.fullName}</div>
+            <div class="text-xs text-[#656d76]">Unit / Kelas: <strong>${u.department}</strong> · ID: <code class="font-mono">${u.memberBarcode}</code></div>
+          </div>
+
+          <div class="bg-[#f6f8fa] border border-[#d0d7de] rounded-md p-3 text-center">
+            <svg class="barcode-svg" data-code="${u.memberBarcode}" data-height="44"></svg>
+            <p class="text-[11px] text-[#656d76] mt-1">Tunjukkan barcode ini ke Pustakawan saat meminjam buku</p>
+          </div>
+
+          <button onclick="window.printMemberCard('${u.id}')" class="gh-btn w-full py-2">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Cetak Kartu Anggota</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Daftar Pinjaman Aktif Guru / Siswa -->
+      <div class="lg:col-span-7 gh-box overflow-hidden">
+        <div class="gh-box-header flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-[#1f2328]">Pinjaman Buku Aktif Saya (${activeLoans.length})</h3>
+          <button onclick="window.switchMenu('books')" class="text-xs text-[#0969da] hover:underline font-medium">Cari Katalog Buku →</button>
+        </div>
+
+        <div class="p-4">
+          ${activeLoans.length === 0 ? `
+            <div class="p-8 text-center text-xs text-[#656d76] border border-dashed border-[#d0d7de] rounded-md">
+              Anda sedang tidak meminjam buku. Buka menu Katalog Buku untuk melihat ketersediaan koleksi.
+            </div>
+          ` : `
+            <div class="divide-y divide-[#d0d7de] border border-[#d0d7de] rounded-md">
+              ${activeLoans.map(t => `
+                <div class="p-3.5 flex items-center justify-between gap-3">
+                  <div>
+                    <span class="font-mono text-xs font-bold text-[#0969da]">${t.bookBarcode}</span>
+                    <h4 class="text-sm font-semibold text-[#1f2328]">${t.bookTitle}</h4>
+                    <p class="text-xs text-[#656d76]">Pinjam: ${t.borrowDate} · Jatuh Tempo: <strong class="text-[#9a6700]">${t.dueDate}</strong></p>
+                  </div>
+                  <span class="gh-label bg-[#dafbe1] text-[#1a7f37]">Dipinjam</span>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAuthenticatedShell() {
+  const role = state.currentUser?.role || "siswa";
+  const isStaff = isStaffRole(role);
+  const rCfg = ROLE_CONFIG[role] || ROLE_CONFIG.siswa;
+  const logoSrc = getActiveSchoolLogo();
+
+  let menus = [];
+  if (role === "kepala_sekolah") {
+    menus = [
+      { key: "dashboard", label: "Rekap Inventaris Buku", icon: "file-spreadsheet" },
+      { key: "books", label: "Katalog & Sumber Buku", icon: "folder-git-2" },
+      { key: "members", label: "Data Pengguna (6 Role)", icon: "users" }
+    ];
+  } else if (["admin", "kepala_perpustakaan", "pustakawan"].includes(role)) {
+    menus = [
+      { key: "dashboard", label: "Overview", icon: "layout-grid" },
+      { key: "circulation", label: "Scan Sirkulasi", icon: "scan-barcode" },
+      { key: "books", label: "Katalog & Sumber", icon: "book-marked" },
+      { key: "members", label: "Pengguna (6 Role)", icon: "users" },
+      { key: "transactions", label: "Log Riwayat", icon: "history" }
+    ];
+  } else {
+    menus = [
+      { key: "member_home", label: "Kartu & Pinjaman", icon: "id-card" },
+      { key: "books", label: "Katalog Buku", icon: "book-open" }
+    ];
+  }
+
+  let activeContent = "";
+  if (isStaff) {
+    if (state.activeMenu === "dashboard") activeContent = renderStaffDashboard();
+    else if (state.activeMenu === "circulation") activeContent = renderCirculationDesk();
+    else if (state.activeMenu === "books") activeContent = renderBooksCatalog();
+    else if (state.activeMenu === "members") activeContent = renderMembersManagement();
+    else if (state.activeMenu === "transactions") activeContent = renderTransactionsHistory();
+    else activeContent = renderStaffDashboard();
+  } else {
+    if (state.activeMenu === "member_home") activeContent = renderMemberHome();
+    else activeContent = renderBooksCatalog();
+  }
+
+  return `
+    <div class="min-h-screen bg-white">
+      <!-- DESKTOP FIXED LEFT SIDEBAR -->
+      <aside class="desktop-sidebar fixed top-0 left-0 bottom-0 w-[16.5rem] bg-[#f6f8fa] border-r border-[#d0d7de] flex-col justify-between z-40">
+        <div>
+          <div class="h-14 px-4 bg-[#24292f] text-white flex items-center justify-between">
+            <div class="flex items-center gap-2.5 truncate">
+              <img
+                src="${logoSrc}"
+                alt="Logo Sekolah"
+                onerror="window.handleLogoError(this)"
+                class="school-logo-img w-8 h-8 rounded bg-white p-0.5 object-contain shrink-0"
+              />
+              <div class="truncate">
+                <div class="text-xs font-bold leading-tight truncate">SmartLib Portal</div>
+                <div class="text-[10px] text-white/70 font-mono truncate">${state.principalInfo.schoolName}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 border-b border-[#d0d7de] bg-white">
+            <div class="flex items-center justify-between gap-2">
+              <span class="gh-label ${rCfg.badgeClass}">
+                <i data-lucide="${rCfg.icon}" class="w-3 h-3"></i>
+                ${rCfg.label}
+              </span>
+              <span class="font-mono text-[11px] text-[#656d76]">${state.currentUser.memberBarcode || ''}</span>
+            </div>
+            <div class="text-xs font-bold text-[#1f2328] mt-1.5 truncate">${state.currentUser.fullName}</div>
+          </div>
+
+          <nav class="p-3 space-y-1">
+            ${menus.map(m => {
+              const active = state.activeMenu === m.key;
+              return `
+                <button
+                  onclick="window.switchMenu('${m.key}')"
+                  class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition relative ${active ? 'bg-white text-[#1f2328] font-semibold shadow-sm border border-[#d0d7de]' : 'text-[#656d76] hover:bg-[#eff2f5] hover:text-[#1f2328]'}"
+                >
+                  ${active ? `<span class="w-1 h-4 bg-[#fd8c73] rounded-full absolute left-1"></span>` : ''}
+                  <i data-lucide="${m.icon}" class="w-4 h-4 ${active ? 'text-[#1f2328]' : 'text-[#656d76]'}"></i>
+                  <span>${m.label}</span>
+                </button>
+              `;
+            }).join('')}
+          </nav>
+        </div>
+
+        <div class="p-3 border-t border-[#d0d7de] space-y-2 bg-white">
+          <button onclick="window.navigateScreen('landing')" class="gh-btn w-full justify-start text-xs">
+            <i data-lucide="book" class="w-3.5 h-3.5 text-[#656d76]"></i>
+            <span>Halaman Sambutan Kepsek</span>
+          </button>
+          <button onclick="window.handleLogout()" class="gh-btn gh-btn-danger w-full justify-center text-xs">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>Sign out</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT AREA -->
+      <div class="main-content-area">
+        <header class="sticky top-0 z-30 bg-[#f6f8fa]/95 backdrop-blur border-b border-[#d0d7de] px-4 sm:px-8 h-14 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs sm:text-sm">
+            <img
+              src="${logoSrc}"
+              alt="Logo"
+              onerror="window.handleLogoError(this)"
+              class="school-logo-img w-6 h-6 rounded bg-white p-0.5 border border-[#d0d7de] object-contain lg:hidden"
+            />
+            <span class="text-[#0969da] font-semibold hidden sm:inline">${state.principalInfo.schoolName}</span>
+            <span class="text-[#656d76] hidden sm:inline">/</span>
+            <span class="font-bold text-[#1f2328]">${menus.find(m => m.key === state.activeMenu)?.label || 'Overview'}</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              onclick="window.openCameraScanner('${isStaff && state.activeMenu === 'circulation' ? 'circulation-book' : 'catalog-search'}', 'Scan Barcode via Kamera HP')"
+              class="gh-btn"
+            >
+              <i data-lucide="camera" class="w-3.5 h-3.5 text-[#0969da]"></i>
+              <span>Scan HP</span>
+            </button>
+            <button onclick="window.handleLogout()" class="lg:hidden gh-btn gh-btn-danger">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </header>
+
+        <main class="p-4 sm:p-8 max-w-6xl mx-auto">
+          ${activeContent}
+        </main>
+      </div>
+
+      <!-- MOBILE FLOATING BOTTOM NAVIGATION BAR -->
+      <nav class="mobile-bottom-nav fixed bottom-0 left-0 right-0 h-16 glass-surface border-t border-[#d0d7de] z-40 items-center justify-around px-2">
+        ${menus.map(m => `
+          <button
+            onclick="window.switchMenu('${m.key}')"
+            class="flex flex-col items-center justify-center py-1 px-2.5 rounded-md transition ${state.activeMenu === m.key ? 'text-[#0969da] font-bold' : 'text-[#656d76]'}"
+          >
+            <i data-lucide="${m.icon}" class="w-4 h-4"></i>
+            <span class="text-[10px] mt-0.5">${m.label.split(' ')[0]}</span>
+          </button>
+        `).join('')}
+      </nav>
+    </div>
+  `;
+}
+
+function renderApp() {
+  renderPreviewBanner();
+  const container = document.getElementById("app-view");
+  if (!container) return;
+
+  if (state.screen === "landing") {
+    container.innerHTML = renderLandingScreen();
+  } else if (state.screen === "login") {
+    container.innerHTML = renderLoginScreen();
+  } else {
+    container.innerHTML = renderAuthenticatedShell();
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+  renderAllBarcodes();
+}
+
+initPreviewDummyData();
+resolveImgbbViewerUrl(state.principalInfo.schoolLogo);
+
+if (!IS_PREVIEW && auth) {
+  startRealtimeListeners();
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      state.currentUser = {
+        id: user.uid,
+        role: "admin",
+        email: user.email,
+        memberBarcode: "ADMIN-AUTH",
+        fullName: "Administrator Utama",
+        department: "Admin Sistem"
+      };
+    }
+    renderApp();
+  });
+}
+renderApp();
+</script>
+</body>
+</html>
